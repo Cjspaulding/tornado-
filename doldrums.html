@@ -218,7 +218,14 @@
       display:flex;align-items:center;gap:14px;
     }
 
-    .section-label { font-size:8px;letter-spacing:.26em;text-transform:uppercase;color:var(--ink4);flex-shrink:0; }
+    .section-label {
+      font-size:11px;
+      letter-spacing:.32em;
+      text-transform:uppercase;
+      color:var(--ink2);
+      flex-shrink:0;
+      font-weight:500;
+    }
     .section-line { flex:1;height:1px;background:var(--rule); }
     .section-count { font-size:8px;color:var(--ink5);letter-spacing:.12em; }
 
@@ -259,7 +266,7 @@
       border-bottom:1px solid var(--rule);background:var(--ice);position:relative;z-index:1;
     }
 
-    .station-id { font-size:7.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--navy3);margin-bottom:5px;font-weight:500; }
+    .station-id { font-size:7.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--navy2);margin-bottom:5px;font-weight:500; }
     .location-name { font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:300;letter-spacing:.03em;color:var(--ink);line-height:1; }
     .location-sub { font-size:8px;color:var(--ink4);letter-spacing:.14em;text-transform:uppercase;margin-top:5px; }
 
@@ -649,7 +656,7 @@
 
 <!-- SECTION -->
 <div class="section-head">
-  <div class="section-label">Field Readings</div>
+  <div class="section-label">Surface Observations</div>
   <div class="section-line"></div>
   <div class="section-count" id="station-count"></div>
 </div>
@@ -1207,7 +1214,7 @@ function setView(view) {
     if(sectionHead) sectionHead.querySelector('.section-label').textContent = 'Seven-Day Outlook';
     renderForecastView();
   } else {
-    if(sectionHead) sectionHead.querySelector('.section-label').textContent = 'Field Readings';
+    if(sectionHead) sectionHead.querySelector('.section-label').textContent = 'Surface Observations';
     // restore conditions grid
     if(!document.getElementById('weather-grid')) {
       main.innerHTML = '<div class="grid" id="weather-grid"></div>';
