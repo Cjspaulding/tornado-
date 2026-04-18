@@ -881,8 +881,11 @@ function buildGrid() {
         <div class="empty-icon">🌫️</div>
         <div class="empty-title">No stations yet</div>
         <div class="empty-sub">Add a city to start tracking conditions.</div>
-        <button class="empty-btn" onclick="openModal()">
-          <span class="empty-btn-plus">+</span> Add your first city
+        <button class="empty-btn" onclick="addMyLocation()" style="margin-bottom:12px;">
+          <span class="empty-btn-plus">◎</span> Use my location
+        </button>
+        <button class="empty-btn" onclick="openModal()" style="background:transparent;border:1px solid var(--rule-dk);color:var(--ink3);">
+          <span class="empty-btn-plus" style="color:var(--orange2)">+</span> Search for a city
         </button>
       </div>`;
     return;
