@@ -916,6 +916,9 @@ function renderError(i, msg) {
 async function fetchWeather(loc, i) {
   await new Promise(res => setTimeout(res, i * 380));
 
+  // Fallback timezone if missing or unusual
+  const tz = loc.tz && loc.tz.includes('/') ? loc.tz : 'America/New_York';
+
   const params = new URLSearchParams({
     latitude:           loc.lat,
     longitude:          loc.lon,
@@ -924,14 +927,22 @@ async function fetchWeather(loc, i) {
     temperature_unit:   loc.unit,
     wind_speed_unit:    loc.windUnit,
     precipitation_unit: loc.precUnit,
-    timezone:           loc.tz,
+    timezone:           tz,
     forecast_days:      7,
   });
 
   try {
     const res = await fetch(`https://api.open-meteo.com/v1/forecast?${params}`);
-    if (!res.ok) throw new Error(`Error ${res.status}`);
-    renderCard(i, loc, await res.json());
+    if (!res.ok) {
+      // Retry with auto timezone
+      const retryParams = new URLSearchParams(params);
+      retryParams.set('timezone', 'auto');
+      const retry = await fetch(`https://api.open-meteo.com/v1/forecast?${retryParams}`);
+      if (!retry.ok) throw new Error(`Error ${retry.status}`);
+      renderCard(i, loc, await retry.json());
+    } else {
+      renderCard(i, loc, await res.json());
+    }
   } catch (err) {
     renderError(i, err.message);
   }
