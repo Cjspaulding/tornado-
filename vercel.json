@@ -1,0 +1,9 @@
+{
+  "name": "tornado",
+  "buildCommand": null,
+  "outputDirectory": ".",
+  "framework": null,
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/tornado.html" }
+  ]
+}
