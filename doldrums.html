@@ -1158,7 +1158,7 @@ function buildGrid() {
     pill.id = `sum-${i}`;
     pill.onclick = () => scrollToCard(i);
     pill.innerHTML = `
-      <div class="sum-icon" id="sum-icon-${i}">—</div>
+      <div class="sum-icon" id="sum-icon-${i}"></div>
       <div>
         <div class="sum-name">${loc.name}${loc.state?', '+stateAbbr(loc.state):''}</div>
         <div class="sum-temp" id="sum-temp-${i}">—</div>
@@ -1214,10 +1214,10 @@ function renderCard(i, loc, data) {
   const card=document.getElementById(`card-${i}`);
   if(card){card.className='card '+w.tint;card.style.animationDelay=(i*90)+'ms';}
 
-  const iconEl=document.getElementById(`icon-${i}`);if(iconEl)iconEl.textContent=w.icon;
+  const iconEl=document.getElementById(`icon-${i}`);if(iconEl)iconEl.innerHTML=w.icon;
   const condEl=document.getElementById(`cond-${i}`);if(condEl)condEl.textContent=w.label;
   const metaEl=document.getElementById(`meta-${i}`);if(metaEl)metaEl.textContent=localTime(loc.tz);
-  const si=document.getElementById(`sum-icon-${i}`);if(si)si.textContent=w.icon;
+  const si=document.getElementById(`sum-icon-${i}`);if(si)si.innerHTML=w.icon;
   const st=document.getElementById(`sum-temp-${i}`);if(st)st.textContent=Math.round(c.temperature_2m)+loc.sym;
 
   const fcast=Array.from({length:Math.min(7,daily.time.length)},(_,d)=>{
@@ -1828,7 +1828,7 @@ function appendCard(loc, i) {
   pill.className = 'summary-pill'; pill.id = `sum-${i}`;
   pill.onclick = () => scrollToCard(i);
   pill.innerHTML = `
-    <div class="sum-icon" id="sum-icon-${i}">—</div>
+    <div class="sum-icon" id="sum-icon-${i}"></div>
     <div>
       <div class="sum-name">${loc.name}${loc.state?', '+stateAbbr(loc.state):''}</div>
       <div class="sum-temp" id="sum-temp-${i}">—</div>
