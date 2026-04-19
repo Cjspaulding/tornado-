@@ -1699,8 +1699,23 @@ function renderCard(i, loc, data) {
       : daily.temperature_2m_max[d];
     const dw=wmo(daily.weather_code[d], dayTempC);
     const precip=daily.precipitation_sum[d];
+    const probMax=daily.precipitation_probability_max?.[d] ?? '';
+    const windMax=daily.wind_speed_10m_max?.[d] ?? '';
+    const windDir=daily.wind_direction_10m_dominant?.[d] ?? '';
     const hasRain=precip>(loc.precUnit==='inch'?0.01:0.1);
-    return`<div class="fc-day${d===0?' today':''}" onclick="fcToggle(${i},${d})">
+    const dayLabel=d===0?'Today':new Date(daily.time[d]+'T12:00:00').toLocaleDateString('en-US',{weekday:'long',month:'short',day:'numeric'});
+    return`<div class="fc-day${d===0?' today':''}" onclick="fcToggle(this,${i})"
+      data-hi="${Math.round(daily.temperature_2m_max[d])}"
+      data-lo="${Math.round(daily.temperature_2m_min[d])}"
+      data-label="${dw.label}"
+      data-precip="${precip!=null?rv(precip):''}"
+      data-prob="${probMax}"
+      data-wind="${windMax!=''?Math.round(windMax):''}"
+      data-winddir="${windDir}"
+      data-day="${dayLabel}"
+      data-sym="${loc.sym}"
+      data-pu="${loc.precUnit==='inch'?'in':'mm'}"
+      data-wu="${loc.windUnit}">
       <div class="fc-name">${shortDay(daily.time[d],loc.tz,d===0)}</div>
       <div class="fc-icon">${dw.icon}</div>
       <div class="fc-hi">${Math.round(daily.temperature_2m_max[d])}°</div>
@@ -2352,71 +2367,53 @@ function appendCard(loc, i) {
 }
 
 // ── FORECAST DAY EXPAND ────────────────────────────────────────────────────────
-const _fcActive = {}; // {cardIdx: dayIdx or null}
-
-function fcToggle(cardIdx, dayIdx) {
+function fcToggle(el, cardIdx) {
+  const strip  = el.parentElement;
   const expand = document.getElementById('fc-expand-' + cardIdx);
-  const strip  = expand?.previousElementSibling;
-  if(!expand || !strip) return;
+  if(!expand) return;
 
-  const daily = cachedForecast[cardIdx];
-  const loc   = LOCATIONS[cardIdx];
-  if(!daily || !loc) return;
+  const isActive = el.classList.contains('active');
 
-  const prev = _fcActive[cardIdx];
+  // Deactivate all days
+  strip.querySelectorAll('.fc-day').forEach(d => d.classList.remove('active'));
 
-  // Deactivate all days in this card
-  strip.querySelectorAll('.fc-day').forEach(el => el.classList.remove('active'));
-
-  // If same day tapped → collapse
-  if(prev === dayIdx) {
-    _fcActive[cardIdx] = null;
+  // If same day — collapse
+  if(isActive) {
     expand.classList.remove('open');
     expand.innerHTML = '';
     return;
   }
 
-  // Open new day
-  _fcActive[cardIdx] = dayIdx;
-  strip.querySelectorAll('.fc-day')[dayIdx]?.classList.add('active');
+  // Activate this day
+  el.classList.add('active');
 
-  const pu  = loc.precUnit === 'inch' ? 'in' : 'mm';
-  const wu  = loc.windUnit;
-  const dayTempC = loc.unit === 'fahrenheit'
-    ? (daily.temperature_2m_max[dayIdx] - 32) * 5/9
-    : daily.temperature_2m_max[dayIdx];
-  const dw  = wmo(daily.weather_code[dayIdx], dayTempC);
-  const precip  = daily.precipitation_sum?.[dayIdx];
-  const probMax = daily.precipitation_probability_max?.[dayIdx];
-  const windMax = daily.wind_speed_10m_max?.[dayIdx];
-  const windDir = daily.wind_direction_10m_dominant?.[dayIdx];
-  const dayLabel = dayIdx === 0 ? 'Today'
-    : new Date(daily.time[dayIdx]+'T12:00:00').toLocaleDateString('en-US',{weekday:'long',month:'short',day:'numeric'});
+  // Read data from element attributes
+  const d = el.dataset;
+  const windNote = d.winddir ? arrow(+d.winddir) + ' ' + compass(+d.winddir) : '';
 
   expand.innerHTML = `
     <div class="fc-expand-inner">
       <div class="fc-expand-cond">
-        <div style="width:22px;height:22px;flex-shrink:0">${dw.icon}</div>
-        <div class="fc-expand-cond-label">${dw.label}</div>
-        <div class="fc-expand-day-label">${dayLabel}</div>
+        <div class="fc-expand-cond-label">${d.label}</div>
+        <div class="fc-expand-day-label">${d.day}</div>
       </div>
       <div class="fc-expand-cell">
         <div class="fc-expand-label">High</div>
-        <div class="fc-expand-val">${Math.round(daily.temperature_2m_max[dayIdx])}<span class="fc-expand-unit">${loc.sym}</span></div>
+        <div class="fc-expand-val">${d.hi}<span class="fc-expand-unit">${d.sym}</span></div>
       </div>
       <div class="fc-expand-cell">
         <div class="fc-expand-label">Low</div>
-        <div class="fc-expand-val">${Math.round(daily.temperature_2m_min[dayIdx])}<span class="fc-expand-unit">${loc.sym}</span></div>
+        <div class="fc-expand-val">${d.lo}<span class="fc-expand-unit">${d.sym}</span></div>
       </div>
       <div class="fc-expand-cell">
         <div class="fc-expand-label">Precip</div>
-        <div class="fc-expand-val">${precip != null ? rv(precip) : '—'}<span class="fc-expand-unit"> ${pu}</span></div>
-        ${probMax != null ? '<div class="fc-expand-note">'+probMax+'% chance</div>' : ''}
+        <div class="fc-expand-val">${d.precip||'—'}<span class="fc-expand-unit">${d.precip?' '+d.pu:''}</span></div>
+        ${d.prob ? '<div class="fc-expand-note">'+d.prob+'% chance</div>' : ''}
       </div>
       <div class="fc-expand-cell">
         <div class="fc-expand-label">Wind</div>
-        <div class="fc-expand-val">${windMax != null ? Math.round(windMax) : '—'}<span class="fc-expand-unit"> ${wu}</span></div>
-        ${windDir != null ? '<div class="fc-expand-note">'+arrow(windDir)+' '+compass(windDir)+'</div>' : ''}
+        <div class="fc-expand-val">${d.wind||'—'}<span class="fc-expand-unit">${d.wind?' '+d.wu:''}</span></div>
+        ${windNote ? '<div class="fc-expand-note">'+windNote+'</div>' : ''}
       </div>
     </div>`;
 
