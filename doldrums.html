@@ -1150,7 +1150,74 @@
       font-size:14px;padding:0 2px;transition:color .2s;opacity:.4;flex-shrink:0;
     }
     .log-note-del:hover { color:var(--orange);opacity:1; }
-    /* ── QUICK NOTE FAB ───────────────────────────────────────────────────── */
+    /* ── FORECAST DAY EXPAND ──────────────────────────────────────────────── */
+    .fc-day { cursor:pointer; }
+    .fc-day.active {
+      background:var(--navy);
+    }
+    .fc-day.active .fc-name { color:rgba(255,255,255,0.5); }
+    .fc-day.active .fc-hi  { color:#fff; }
+    .fc-day.active .fc-lo  { color:rgba(255,255,255,0.4); }
+    .fc-day.active .fc-rain { color:rgba(255,255,255,0.4); }
+
+    .fc-expand {
+      border-top:1px solid var(--rule);
+      overflow:hidden;
+      max-height:0;
+      transition:max-height .28s cubic-bezier(.22,1,.36,1);
+    }
+    .fc-expand.open { max-height:160px; }
+
+    .fc-expand-inner {
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      padding:0;
+    }
+
+    .fc-expand-cell {
+      padding:11px 14px;
+      border-right:1px solid var(--rule);
+      border-bottom:1px solid var(--rule);
+    }
+    .fc-expand-cell:last-child { border-right:none; }
+
+    .fc-expand-label {
+      font-size:7px;letter-spacing:.18em;text-transform:uppercase;
+      color:var(--ink4);margin-bottom:5px;
+    }
+    .fc-expand-val {
+      font-size:18px;font-weight:300;color:var(--navy);line-height:1;
+    }
+    .fc-expand-unit { font-size:8px;color:var(--ink4); }
+    .fc-expand-note { font-size:8px;color:var(--ink4);margin-top:3px; }
+    .fc-expand-cond {
+      grid-column:1/-1;
+      padding:9px 14px;
+      display:flex;align-items:center;gap:10px;
+      border-bottom:1px solid var(--rule);
+      background:var(--ice);
+    }
+    .fc-expand-cond-label {
+      font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);
+    }
+    .fc-expand-day-label {
+      font-size:8px;letter-spacing:.14em;text-transform:uppercase;
+      color:var(--ink4);margin-left:auto;
+    }
+
+    /* ── FAB MOBILE SAFE AREA ─────────────────────────────────────────────── */
+    .fab {
+      bottom:calc(28px + env(safe-area-inset-bottom));
+    }
+    .quick-note-sheet {
+      padding-bottom:env(safe-area-inset-bottom);
+    }
+
+    /* ── MOBILE NAV FIX ───────────────────────────────────────────────────── */
+    @media(max-width:540px) {
+      .refresh-btn span:last-child { display:none; }
+      .refresh-btn { padding:6px 10px; min-width:32px; justify-content:center; }
+    }
     .fab {
       position:fixed;bottom:28px;right:22px;z-index:400;
       width:52px;height:52px;border-radius:50%;
@@ -1636,7 +1703,7 @@ function renderCard(i, loc, data) {
     const dw=wmo(daily.weather_code[d], dayTempC);
     const precip=daily.precipitation_sum[d];
     const hasRain=precip>(loc.precUnit==='inch'?0.01:0.1);
-    return`<div class="fc-day${d===0?' today':''}">
+    return`<div class="fc-day${d===0?' today':''}" onclick="fcToggle(${i},${d})">
       <div class="fc-name">${shortDay(daily.time[d],loc.tz,d===0)}</div>
       <div class="fc-icon">${dw.icon}</div>
       <div class="fc-hi">${Math.round(daily.temperature_2m_max[d])}°</div>
@@ -1692,6 +1759,7 @@ function renderCard(i, loc, data) {
         <div class="forecast-rule"></div>
       </div>
       <div class="forecast-strip">${fcast}</div>
+      <div class="fc-expand" id="fc-expand-${i}"></div>
     </div>
     <div class="sun-row">
       <div class="sun-item">
@@ -1731,7 +1799,7 @@ async function fetchWeather(loc,i){
   const p=new URLSearchParams({
     latitude:loc.lat,longitude:loc.lon,
     current:'temperature_2m,apparent_temperature,relative_humidity_2m,precipitation,rain,wind_speed_10m,wind_direction_10m,wind_gusts_10m,weather_code,uv_index',
-    daily:'weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,wind_speed_10m_max,sunrise,sunset',
+    daily:'weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max,wind_speed_10m_max,wind_direction_10m_dominant,sunrise,sunset',
     temperature_unit:loc.unit,wind_speed_unit:loc.windUnit,
     precipitation_unit:loc.precUnit,timezone:loc.tz,forecast_days:7,
   });
@@ -2279,6 +2347,78 @@ function appendCard(loc, i) {
 
   const count = `${LOCATIONS.length} stations`;
   ['station-count','sticky-count'].forEach(id => { const e = document.getElementById(id); if(e) e.textContent = count; });
+}
+
+// ── FORECAST DAY EXPAND ────────────────────────────────────────────────────────
+const _fcActive = {}; // {cardIdx: dayIdx or null}
+
+function fcToggle(cardIdx, dayIdx) {
+  const expand = document.getElementById('fc-expand-' + cardIdx);
+  const strip  = expand?.previousElementSibling;
+  if(!expand || !strip) return;
+
+  const daily = cachedForecast[cardIdx];
+  const loc   = LOCATIONS[cardIdx];
+  if(!daily || !loc) return;
+
+  const prev = _fcActive[cardIdx];
+
+  // Deactivate all days in this card
+  strip.querySelectorAll('.fc-day').forEach(el => el.classList.remove('active'));
+
+  // If same day tapped → collapse
+  if(prev === dayIdx) {
+    _fcActive[cardIdx] = null;
+    expand.classList.remove('open');
+    expand.innerHTML = '';
+    return;
+  }
+
+  // Open new day
+  _fcActive[cardIdx] = dayIdx;
+  strip.querySelectorAll('.fc-day')[dayIdx]?.classList.add('active');
+
+  const pu  = loc.precUnit === 'inch' ? 'in' : 'mm';
+  const wu  = loc.windUnit;
+  const dayTempC = loc.unit === 'fahrenheit'
+    ? (daily.temperature_2m_max[dayIdx] - 32) * 5/9
+    : daily.temperature_2m_max[dayIdx];
+  const dw  = wmo(daily.weather_code[dayIdx], dayTempC);
+  const precip  = daily.precipitation_sum?.[dayIdx];
+  const probMax = daily.precipitation_probability_max?.[dayIdx];
+  const windMax = daily.wind_speed_10m_max?.[dayIdx];
+  const windDir = daily.wind_direction_10m_dominant?.[dayIdx];
+  const dayLabel = dayIdx === 0 ? 'Today'
+    : new Date(daily.time[dayIdx]+'T12:00:00').toLocaleDateString('en-US',{weekday:'long',month:'short',day:'numeric'});
+
+  expand.innerHTML = `
+    <div class="fc-expand-inner">
+      <div class="fc-expand-cond">
+        <div style="width:22px;height:22px;flex-shrink:0">${dw.icon}</div>
+        <div class="fc-expand-cond-label">${dw.label}</div>
+        <div class="fc-expand-day-label">${dayLabel}</div>
+      </div>
+      <div class="fc-expand-cell">
+        <div class="fc-expand-label">High</div>
+        <div class="fc-expand-val">${Math.round(daily.temperature_2m_max[dayIdx])}<span class="fc-expand-unit">${loc.sym}</span></div>
+      </div>
+      <div class="fc-expand-cell">
+        <div class="fc-expand-label">Low</div>
+        <div class="fc-expand-val">${Math.round(daily.temperature_2m_min[dayIdx])}<span class="fc-expand-unit">${loc.sym}</span></div>
+      </div>
+      <div class="fc-expand-cell">
+        <div class="fc-expand-label">Precip</div>
+        <div class="fc-expand-val">${precip != null ? rv(precip) : '—'}<span class="fc-expand-unit"> ${pu}</span></div>
+        ${probMax != null ? '<div class="fc-expand-note">'+probMax+'% chance</div>' : ''}
+      </div>
+      <div class="fc-expand-cell">
+        <div class="fc-expand-label">Wind</div>
+        <div class="fc-expand-val">${windMax != null ? Math.round(windMax) : '—'}<span class="fc-expand-unit"> ${wu}</span></div>
+        ${windDir != null ? '<div class="fc-expand-note">'+arrow(windDir)+' '+compass(windDir)+'</div>' : ''}
+      </div>
+    </div>`;
+
+  expand.classList.add('open');
 }
 
 // ── DARK MODE ─────────────────────────────────────────────────────────────────
