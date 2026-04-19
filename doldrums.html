@@ -1979,7 +1979,9 @@ function renderError(i,msg){
 
 // ── FETCH ─────────────────────────────────────────────────────────────────────
 async function fetchWeather(loc,i){
-  await new Promise(r=>setTimeout(r,i*350));
+  // Only stagger on first load — on refresh, fire immediately so data lands fast
+  const isFirstLoad = !document.getElementById('body-'+i)?.querySelector('.temp-numeral');
+  if(isFirstLoad) await new Promise(r=>setTimeout(r,i*350));
   const p=new URLSearchParams({
     latitude:loc.lat,longitude:loc.lon,
     current:'temperature_2m,apparent_temperature,relative_humidity_2m,precipitation,rain,wind_speed_10m,wind_direction_10m,wind_gusts_10m,weather_code,uv_index',
@@ -1991,7 +1993,7 @@ async function fetchWeather(loc,i){
     const res=await fetch(`https://api.open-meteo.com/v1/forecast?${p}`);
     if(!res.ok)throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
-    cachedForecast[i] = data.daily; // cache for forecast view
+    cachedForecast[i] = data.daily;
     renderCard(i,loc,data);
   }catch(err){renderError(i,err.message);}
 }
@@ -2015,7 +2017,16 @@ async function refreshAll(){
   const icon=document.getElementById('refresh-icon');
   if(btn)btn.disabled=true;
   if(icon){icon.textContent='↺';icon.classList.add('spin');}
-  buildGrid();
+
+  // Only rebuild grid if it doesn't exist yet — otherwise fetch in place
+  // so existing data stays visible while new data loads (no skeleton flash)
+  const gridExists = !!document.getElementById('weather-grid') && LOCATIONS.length > 0
+    && !!document.getElementById('body-0');
+
+  if(!gridExists) {
+    buildGrid();
+  }
+
   await Promise.all(LOCATIONS.map((loc,i)=>fetchWeather(loc,i)));
   const now=new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit',hour12:true});
   const u=document.getElementById('last-updated');
