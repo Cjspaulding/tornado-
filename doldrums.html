@@ -1150,57 +1150,55 @@
       font-size:14px;padding:0 2px;transition:color .2s;opacity:.4;flex-shrink:0;
     }
     .log-note-del:hover { color:var(--orange);opacity:1; }
-    /* ── FORECAST DAY EXPAND ──────────────────────────────────────────────── */
+    /* ── FORECAST DAY DETAIL ──────────────────────────────────────────────── */
     .fc-day { cursor:pointer; }
     .fc-day.active {
       background:var(--navy);
     }
-    .fc-day.active .fc-name { color:rgba(255,255,255,0.5); }
-    .fc-day.active .fc-hi  { color:#fff; }
-    .fc-day.active .fc-lo  { color:rgba(255,255,255,0.4); }
-    .fc-day.active .fc-rain { color:rgba(255,255,255,0.4); }
+    .fc-day.active .fc-name  { color:rgba(255,255,255,0.5); }
+    .fc-day.active .fc-hi    { color:#fff; }
+    .fc-day.active .fc-lo    { color:rgba(255,255,255,0.35); }
+    .fc-day.active .fc-rain  { color:rgba(255,255,255,0.35); }
 
-    .fc-expand {
-      border-top:0 solid transparent;
-      overflow:hidden;
-      height:0;
-      transition:height .25s ease;
-    }
-    .fc-expand-inner {
-      display:grid;
-      grid-template-columns:repeat(4,1fr);
-      padding:0;
+    .day-detail {
+      animation: cardIn .22s cubic-bezier(.22,1,.36,1) both;
     }
 
-    .fc-expand-cell {
-      padding:11px 14px;
-      border-right:1px solid var(--rule);
+    .day-detail-hero {
+      padding:14px 18px 12px;
+      display:flex;align-items:flex-end;
+      border-bottom:1px solid var(--rule);
+      position:relative;z-index:1;
+    }
+    .day-detail-back {
+      position:absolute;top:10px;left:14px;
+      background:none;border:1px solid var(--rule-dk);color:var(--ink3);
+      font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:.14em;
+      text-transform:uppercase;padding:5px 10px;cursor:pointer;
+      transition:all .2s;
+    }
+    .day-detail-back:hover { border-color:var(--navy);color:var(--navy); }
+    .day-detail-label {
+      font-size:8px;letter-spacing:.2em;text-transform:uppercase;
+      color:var(--ink4);margin-bottom:6px;
+    }
+
+    .day-detail-readings {
+      display:grid;grid-template-columns:repeat(2,1fr);
+      position:relative;z-index:1;
+    }
+    .day-detail-cell {
+      padding:12px 18px;border-right:1px solid var(--rule);
       border-bottom:1px solid var(--rule);
     }
-    .fc-expand-cell:last-child { border-right:none; }
+    .day-detail-cell:nth-child(even) { border-right:none; }
 
-    .fc-expand-label {
-      font-size:7px;letter-spacing:.18em;text-transform:uppercase;
-      color:var(--ink4);margin-bottom:5px;
+    .day-detail-hourly {
+      border-top:1px solid var(--rule);position:relative;z-index:1;
     }
-    .fc-expand-val {
-      font-size:18px;font-weight:300;color:var(--navy);line-height:1;
-    }
-    .fc-expand-unit { font-size:8px;color:var(--ink4); }
-    .fc-expand-note { font-size:8px;color:var(--ink4);margin-top:3px; }
-    .fc-expand-cond {
-      grid-column:1/-1;
-      padding:9px 14px;
-      display:flex;align-items:center;gap:10px;
-      border-bottom:1px solid var(--rule);
-      background:var(--ice);
-    }
-    .fc-expand-cond-label {
-      font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);
-    }
-    .fc-expand-day-label {
-      font-size:8px;letter-spacing:.14em;text-transform:uppercase;
-      color:var(--ink4);margin-left:auto;
+    .day-detail-hourly-head {
+      padding:7px 14px;display:flex;align-items:center;gap:10px;
+      border-bottom:1px solid var(--rule);background:var(--ice);
     }
 
     /* ── FAB MOBILE SAFE AREA ─────────────────────────────────────────────── */
@@ -1711,6 +1709,7 @@ function renderCard(i, loc, data) {
       data-wind="${windMax!=''?Math.round(windMax):''}"
       data-winddir="${windDir}"
       data-day="${dayLabel}"
+      data-date="${daily.time[d]}"
       data-sym="${loc.sym}"
       data-pu="${loc.precUnit==='inch'?'in':'mm'}"
       data-wu="${loc.windUnit}">
@@ -1768,8 +1767,7 @@ function renderCard(i, loc, data) {
         <div class="forecast-label">Seven-day outlook</div>
         <div class="forecast-rule"></div>
       </div>
-      <div class="forecast-strip">${fcast}</div>
-      <div class="fc-expand" id="fc-expand-${i}"></div>
+      <div class="forecast-strip" id="fc-strip-${i}">${fcast}</div>
     </div>
     <div class="sun-row">
       <div class="sun-item">
@@ -2364,64 +2362,103 @@ function appendCard(loc, i) {
   ['station-count','sticky-count'].forEach(id => { const e = document.getElementById(id); if(e) e.textContent = count; });
 }
 
-// ── FORECAST DAY EXPAND ────────────────────────────────────────────────────────
+// ── FORECAST DAY DETAIL ────────────────────────────────────────────────────────
 function fcToggle(el, cardIdx) {
-  const strip  = el.parentElement;
-  const expand = document.getElementById('fc-expand-' + cardIdx);
-  if(!expand) return;
+  const strip = document.getElementById('fc-strip-' + cardIdx);
+  const body  = document.getElementById('body-' + cardIdx);
+  if(!strip || !body) return;
 
   const isActive = el.classList.contains('active');
 
   // Deactivate all days
   strip.querySelectorAll('.fc-day').forEach(d => d.classList.remove('active'));
 
-  // If same day — collapse
-  if(isActive) {
-    expand.style.height = expand.scrollHeight + 'px';
-    requestAnimationFrame(() => { expand.style.height = '0'; });
-    expand.style.borderTop = '0 solid transparent';
-    setTimeout(() => { expand.innerHTML = ''; }, 260);
-    return;
-  }
+  // If same day tapped → go back to today
+  if(isActive) { fcRestoreToday(cardIdx); return; }
 
-  // Activate this day
   el.classList.add('active');
 
-  // Read data from element attributes
   const d = el.dataset;
   const windNote = d.winddir ? arrow(+d.winddir) + ' ' + compass(+d.winddir) : '';
+  const loc = LOCATIONS[cardIdx];
+  if(!loc) return;
 
-  expand.innerHTML = `
-    <div class="fc-expand-inner" style="border-top:1px solid var(--rule-dk)">
-      <div class="fc-expand-cond">
-        <div class="fc-expand-cond-label">${d.label}</div>
-        <div class="fc-expand-day-label">${d.day}</div>
-      </div>
-      <div class="fc-expand-cell">
-        <div class="fc-expand-label">High</div>
-        <div class="fc-expand-val">${d.hi}<span class="fc-expand-unit">${d.sym}</span></div>
-      </div>
-      <div class="fc-expand-cell">
-        <div class="fc-expand-label">Low</div>
-        <div class="fc-expand-val">${d.lo}<span class="fc-expand-unit">${d.sym}</span></div>
-      </div>
-      <div class="fc-expand-cell">
-        <div class="fc-expand-label">Precip</div>
-        <div class="fc-expand-val">${d.precip||'—'}<span class="fc-expand-unit">${d.precip?' '+d.pu:''}</span></div>
-        ${d.prob ? '<div class="fc-expand-note">'+d.prob+'% chance</div>' : ''}
-      </div>
-      <div class="fc-expand-cell">
-        <div class="fc-expand-label">Wind</div>
-        <div class="fc-expand-val">${d.wind||'—'}<span class="fc-expand-unit">${d.wind?' '+d.wu:''}</span></div>
-        ${windNote ? '<div class="fc-expand-note">'+windNote+'</div>' : ''}
-      </div>
-    </div>`;
+  // Get hourly data for this day if available
+  const hourly = cachedHourly[cardIdx];
+  let hourlyHTML = '';
+  if(hourly && d.date) {
+    const daySlots = hourly.time
+      .map((t,i) => ({t, temp:hourly.temperature_2m[i], prob:hourly.precipitation_probability[i], code:hourly.weather_code[i]}))
+      .filter(s => s.t.startsWith(d.date));
+    if(daySlots.length) {
+      hourlyHTML = `
+        <div class="day-detail-hourly">
+          <div class="day-detail-hourly-head">
+            <div class="forecast-label">Hourly</div>
+            <div class="forecast-rule"></div>
+          </div>
+          <div class="hv-strip">
+            ${daySlots.map(s => {
+              const hour = parseInt(s.t.slice(11,13));
+              const ampm = hour===0?'12a':hour<12?hour+'a':hour===12?'12p':(hour-12)+'p';
+              const tempC = loc.unit==='fahrenheit'?(s.temp-32)*5/9:s.temp;
+              const hw = wmo(s.code, tempC);
+              return `<div class="hv-slot">
+                <div class="hv-time">${ampm}</div>
+                <div class="hv-icon">${hw.icon}</div>
+                <div class="hv-temp">${Math.round(s.temp)}°</div>
+                <div class="hv-precip-wrap">
+                  <div class="hv-precip-bar-bg"><div class="hv-precip-bar" style="width:${s.prob||0}%"></div></div>
+                  <div class="hv-precip-pct${!s.prob?' zero':''}">${s.prob>0?s.prob+'%':'—'}</div>
+                </div>
+              </div>`;
+            }).join('')}
+          </div>
+        </div>`;
+    }
+  }
 
-  // Animate open using actual content height
-  expand.style.height = '0';
-  requestAnimationFrame(() => {
-    expand.style.height = expand.scrollHeight + 'px';
-  });
+  // Replace card body with day detail
+  body.innerHTML = `<div class="day-detail">
+    <div class="day-detail-hero">
+      <button class="day-detail-back" onclick="fcRestoreToday(${cardIdx})">← Today</button>
+      <div style="flex:1;text-align:center">
+        <div class="day-detail-label">${d.day}</div>
+        <div style="display:flex;align-items:center;justify-content:center;gap:12px">
+          <div style="width:38px;height:38px">${el.querySelector('.fc-icon').innerHTML}</div>
+          <div>
+            <div style="font-size:11px;letter-spacing:.08em;color:var(--ink3)">${d.label}</div>
+            <div style="display:flex;align-items:baseline;gap:8px;margin-top:4px">
+              <span style="font-size:36px;font-weight:300;color:var(--navy)">${d.hi}${d.sym}</span>
+              <span style="font-size:14px;color:var(--ink4)">${d.lo}${d.sym}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="day-detail-readings">
+      <div class="day-detail-cell">
+        <div class="reading-label">Precip</div>
+        <div class="reading-val">${d.precip||'—'}<span class="reading-unit">${d.precip?' '+d.pu:''}</span></div>
+        ${d.prob?'<div class="reading-note">'+d.prob+'% chance</div>':''}
+      </div>
+      <div class="day-detail-cell">
+        <div class="reading-label">Wind Max</div>
+        <div class="reading-val">${d.wind||'—'}<span class="reading-unit">${d.wind?' '+d.wu:''}</span></div>
+        ${windNote?'<div class="reading-note">'+windNote+'</div>':''}
+      </div>
+    </div>
+    ${hourlyHTML}
+  </div>`;
+}
+
+function fcRestoreToday(cardIdx) {
+  const strip = document.getElementById('fc-strip-' + cardIdx);
+  const loc   = LOCATIONS[cardIdx];
+  if(!loc) return;
+  // Re-fetch and re-render this card
+  strip?.querySelectorAll('.fc-day').forEach(d => d.classList.remove('active'));
+  fetchWeather(loc, cardIdx);
 }
 
 // ── DARK MODE ─────────────────────────────────────────────────────────────────
