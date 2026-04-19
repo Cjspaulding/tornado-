@@ -1645,40 +1645,50 @@ async function addMyLocation() {
   navigator.geolocation.getCurrentPosition(async pos => {
     const { latitude: lat, longitude: lon } = pos.coords;
     try {
-      // Reverse geocode using Open-Meteo
-      const res = await fetch(`https://geocoding-api.open-meteo.com/v1/reverse?latitude=${lat.toFixed(4)}&longitude=${lon.toFixed(4)}&language=en&format=json`);
-      const data = await res.json();
-      if(data && data.name) {
-        const units = unitsForTz(data.timezone || 'UTC');
-        const loc = {
-          name: data.name,
-          state: data.admin1 || data.country_code || '',
-          lat: data.latitude,
-          lon: data.longitude,
-          tz: data.timezone || 'UTC',
-          ...units
-        };
-        closeModal();
-        LOCATIONS.push(loc);
-        saveCities();
-        const i = LOCATIONS.length - 1;
-        appendCard(loc, i);
-        fetchWeather(loc, i);
-        setTimeout(() => document.getElementById(`card-${i}`)?.scrollIntoView({behavior:'smooth',block:'start'}), 100);
-      } else {
-        // Fallback: just use coords directly with a generic name
-        const units = unitsForTz('UTC');
-        const loc = { name: `${lat.toFixed(2)}°N`, state: '', lat, lon, tz: 'UTC', ...units };
-        closeModal();
-        LOCATIONS.push(loc);
-        saveCities();
-        const i = LOCATIONS.length - 1;
-        appendCard(loc, i);
-        fetchWeather(loc, i);
-      }
+      // Reverse geocode via Nominatim (OpenStreetMap) — actually works
+      const [geoRes, tzRes] = await Promise.all([
+        fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat.toFixed(5)}&lon=${lon.toFixed(5)}&accept-language=en`, {
+          headers: { 'Accept-Language': 'en', 'User-Agent': 'Doldrums/1.0 (doldrums.app)' }
+        }),
+        // Get timezone from Open-Meteo (minimal forecast call)
+        fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat.toFixed(4)}&longitude=${lon.toFixed(4)}&timezone=auto&daily=weather_code&forecast_days=1`)
+      ]);
+
+      const geoData = await geoRes.json();
+      const tzData  = await tzRes.json();
+
+      const addr = geoData.address || {};
+      const name = addr.city || addr.town || addr.village || addr.hamlet || addr.county || geoData.name || `${lat.toFixed(2)}°N`;
+      const state = addr.state || addr.region || addr.country || '';
+      const tz = tzData.timezone || 'UTC';
+      const units = unitsForTz(tz);
+
+      const loc = { name, state, lat, lon, tz, ...units };
+      closeModal();
+      LOCATIONS.push(loc);
+      saveCities();
+      const i = LOCATIONS.length - 1;
+      appendCard(loc, i);
+      fetchWeather(loc, i);
+      setTimeout(() => document.getElementById(`card-${i}`)?.scrollIntoView({behavior:'smooth',block:'start'}), 100);
     } catch(e) {
-      document.getElementById('modal-results').innerHTML =
-        '<div class="modal-status error">Could not identify location. Try searching instead.</div>';
+      // Last-resort fallback: add with coords as name, auto timezone
+      try {
+        const tzRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat.toFixed(4)}&longitude=${lon.toFixed(4)}&timezone=auto&daily=weather_code&forecast_days=1`);
+        const tzData = await tzRes.json();
+        const tz = tzData.timezone || 'UTC';
+        const units = unitsForTz(tz);
+        const loc = { name: `${Math.abs(lat).toFixed(2)}°${lat >= 0 ? 'N' : 'S'}`, state: '', lat, lon, tz, ...units };
+        closeModal();
+        LOCATIONS.push(loc);
+        saveCities();
+        const i = LOCATIONS.length - 1;
+        appendCard(loc, i);
+        fetchWeather(loc, i);
+      } catch(e2) {
+        document.getElementById('modal-results').innerHTML =
+          '<div class="modal-status error">Could not identify location. Try searching instead.</div>';
+      }
     }
     btn.disabled = false;
     btn.innerHTML = '<span class="geo-icon">◎</span> Use my current location';
@@ -1687,7 +1697,7 @@ async function addMyLocation() {
     btn.innerHTML = '<span class="geo-icon">◎</span> Use my current location';
     document.getElementById('modal-results').innerHTML =
       '<div class="modal-status error">Location access denied.</div>';
-  }, { timeout: 8000 });
+  }, { timeout: 10000 });
 }
 
 // ── SHARE URL ─────────────────────────────────────────────────────────────────
