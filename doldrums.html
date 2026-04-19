@@ -701,6 +701,51 @@
       letter-spacing:.16em;text-transform:uppercase;
     }
 
+    /* ── MOBILE FORECAST LIST ─────────────────────────────────────────────── */
+    .fv-list-view { padding:0 16px 40px;display:flex;flex-direction:column;gap:14px; }
+
+    .fv-city-card {
+      background:var(--white);border:1px solid var(--rule);
+      box-shadow:var(--shadow);overflow:hidden;
+    }
+
+    .fv-city-head {
+      background:var(--navy);padding:10px 16px;
+      display:flex;align-items:baseline;gap:8px;
+    }
+    .fv-city-head-name {
+      font-size:13px;font-weight:400;color:#fff;letter-spacing:.04em;
+    }
+    .fv-city-head-state {
+      font-size:8px;color:rgba(255,255,255,0.4);letter-spacing:.14em;text-transform:uppercase;
+    }
+
+    .fv-day-row {
+      display:grid;
+      grid-template-columns:90px 32px 1fr auto;
+      align-items:center;gap:10px;
+      padding:10px 16px;
+      border-bottom:1px solid var(--rule);
+      transition:background .15s;
+    }
+    .fv-day-row:last-child { border-bottom:none; }
+    .fv-day-row.fv-today { background:var(--navy-dim); }
+
+    .fv-day-name {
+      font-size:10px;font-weight:500;color:var(--ink);letter-spacing:.04em;
+    }
+    .fv-day-cond {
+      font-size:8px;color:var(--ink4);letter-spacing:.04em;margin-top:2px;
+    }
+    .fv-day-icon { display:flex;align-items:center; }
+    .fv-day-icon svg { width:26px;height:26px; }
+    .fv-day-temps {
+      text-align:right;
+    }
+    .fv-day-hi { font-size:16px;font-weight:400;color:var(--navy); }
+    .fv-day-lo { font-size:10px;color:var(--ink4);margin-left:4px; }
+    .fv-day-precip { font-size:8px;color:var(--navy3);margin-top:2px;text-align:right; }
+
     /* ── PRESSURE VIEW ─────────────────────────────────────────────────────── */
     .pressure-view {
       display:grid;grid-template-columns:1fr;gap:14px;
@@ -2187,14 +2232,62 @@ async function fetchForecastOnly(loc, i) {
 
 function renderForecastTable() {
   const main = document.querySelector('main');
+  const isMobile = window.innerWidth < 600;
 
-  // Build day headers from first location with data
   const firstDaily = Object.values(cachedForecast).find(d => d !== null);
   if(!firstDaily) {
     main.innerHTML = `<div class="forecast-view"><div class="fv-empty">Could not load forecast data.</div></div>`;
     return;
   }
 
+  if(isMobile) {
+    // ── MOBILE: vertical day-list per city ──
+    const cards = LOCATIONS.map((loc, i) => {
+      const daily = cachedForecast[i];
+      const pu = loc.precUnit === 'inch' ? 'in' : 'mm';
+      if(!daily) return '';
+
+      const days = daily.time.slice(0,7).map((ds, d) => {
+        const dayTempC = loc.unit === 'fahrenheit'
+          ? (daily.temperature_2m_max[d] - 32) * 5/9
+          : daily.temperature_2m_max[d];
+        const w = wmo(daily.weather_code[d], dayTempC);
+        const precip = daily.precipitation_sum[d];
+        const hasRain = precip > (loc.precUnit==='inch' ? 0.01 : 0.1);
+        const dayLabel = d === 0 ? 'Today'
+          : new Date(ds+'T12:00:00').toLocaleDateString('en-US',{weekday:'long',month:'short',day:'numeric'});
+        const dayShort = d === 0 ? 'Today'
+          : new Date(ds+'T12:00:00').toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});
+
+        return `<div class="fv-day-row${d===0?' fv-today':''}">
+          <div>
+            <div class="fv-day-name">${dayShort}</div>
+            <div class="fv-day-cond">${w.label}</div>
+          </div>
+          <div class="fv-day-icon">${w.icon}</div>
+          <div></div>
+          <div class="fv-day-temps">
+            <span class="fv-day-hi">${Math.round(daily.temperature_2m_max[d])}°</span>
+            <span class="fv-day-lo">${Math.round(daily.temperature_2m_min[d])}°</span>
+            ${hasRain ? `<div class="fv-day-precip">${rv(precip)} ${pu}</div>` : '<div class="fv-day-precip"></div>'}
+          </div>
+        </div>`;
+      }).join('');
+
+      return `<div class="fv-city-card">
+        <div class="fv-city-head">
+          <span class="fv-city-head-name">${loc.name}</span>
+          <span class="fv-city-head-state">${stateAbbr(loc.state)||'Intl'}</span>
+        </div>
+        ${days}
+      </div>`;
+    }).join('');
+
+    main.innerHTML = `<div class="fv-list-view">${cards}</div>`;
+    return;
+  }
+
+  // ── DESKTOP: table view ──
   const days = firstDaily.time.slice(0,7);
   const dayLabels = days.map((ds,d) => {
     if(d===0) return 'Today';
@@ -2211,7 +2304,10 @@ function renderForecastTable() {
 
     const cells = days.map((_,d) => {
       if(!daily) return `<td class="fv-cell${d===0?' today-col':''}"><span style="color:var(--ink5)">—</span></td>`;
-      const w = wmo(daily.weather_code[d]);
+      const dayTempC = loc.unit === 'fahrenheit'
+        ? (daily.temperature_2m_max[d] - 32) * 5/9
+        : daily.temperature_2m_max[d];
+      const w = wmo(daily.weather_code[d], dayTempC);
       const precip = daily.precipitation_sum[d];
       const hasRain = precip > (loc.precUnit==='inch' ? 0.01 : 0.1);
       return `
@@ -3535,7 +3631,7 @@ if('serviceWorker' in navigator) {
     <span class="bottom-nav-label">Hourly</span>
   </button>
   <button class="bottom-nav-item" onclick="setView('radar')" data-view="radar">
-    <span class="bottom-nav-icon">🛰</span>
+    <span class="bottom-nav-icon">🌫️</span>
     <span class="bottom-nav-label">Radar</span>
   </button>
   <button class="bottom-nav-item" onclick="setView('log')" data-view="log">
