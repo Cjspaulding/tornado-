@@ -2264,49 +2264,6 @@ window.renderCard = function(i, loc, data) {
 
 };
 
-// ── PULL TO REFRESH ───────────────────────────────────────────────────────────
-let _touchStartY = 0;
-let _ptr = null;
-
-document.addEventListener('touchstart', e => {
-  _touchStartY = e.touches[0].clientY;
-}, { passive: true });
-
-document.addEventListener('touchmove', e => {
-  const dy = e.touches[0].clientY - _touchStartY;
-  // Don't trigger pull-to-refresh if touching the radar map
-  if(e.target.closest('#radar-map')) return;
-  if(window.scrollY === 0 && dy > 0) {
-    if(!_ptr) {
-      _ptr = document.createElement('div');
-      _ptr.style.cssText = `
-        position:fixed;top:0;left:0;right:0;z-index:500;
-        background:var(--orange);color:#fff;
-        font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.18em;
-        text-transform:uppercase;text-align:center;
-        transition:height .1s;height:0;overflow:hidden;
-        display:flex;align-items:center;justify-content:center;
-      `;
-      document.body.appendChild(_ptr);
-    }
-    const pull = Math.min(dy, 80);
-    _ptr.style.height = pull + 'px';
-    _ptr.textContent = pull > 55 ? '↺  Release to refresh' : '↓  Pull to refresh';
-  }
-}, { passive: true });
-
-document.addEventListener('touchend', e => {
-  const dy = e.changedTouches[0].clientY - _touchStartY;
-  if(_ptr) {
-    if(dy > 55 && window.scrollY === 0) {
-      _ptr.textContent = '↺  Refreshing…';
-      setTimeout(() => { _ptr?.remove(); _ptr = null; }, 600);
-      refreshAll();
-    } else {
-      _ptr.remove(); _ptr = null;
-    }
-  }
-}, { passive: true });
 
 // ── VIEW SWITCHING ─────────────────────────────────────────────────────────────
 let currentView = 'conditions';
