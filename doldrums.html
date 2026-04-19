@@ -1161,13 +1161,11 @@
     .fc-day.active .fc-rain { color:rgba(255,255,255,0.4); }
 
     .fc-expand {
-      border-top:1px solid var(--rule);
+      border-top:0 solid transparent;
       overflow:hidden;
-      max-height:0;
-      transition:max-height .28s cubic-bezier(.22,1,.36,1);
+      height:0;
+      transition:height .25s ease;
     }
-    .fc-expand.open { max-height:160px; }
-
     .fc-expand-inner {
       display:grid;
       grid-template-columns:repeat(4,1fr);
@@ -2379,8 +2377,10 @@ function fcToggle(el, cardIdx) {
 
   // If same day — collapse
   if(isActive) {
-    expand.classList.remove('open');
-    expand.innerHTML = '';
+    expand.style.height = expand.scrollHeight + 'px';
+    requestAnimationFrame(() => { expand.style.height = '0'; });
+    expand.style.borderTop = '0 solid transparent';
+    setTimeout(() => { expand.innerHTML = ''; }, 260);
     return;
   }
 
@@ -2392,7 +2392,7 @@ function fcToggle(el, cardIdx) {
   const windNote = d.winddir ? arrow(+d.winddir) + ' ' + compass(+d.winddir) : '';
 
   expand.innerHTML = `
-    <div class="fc-expand-inner">
+    <div class="fc-expand-inner" style="border-top:1px solid var(--rule-dk)">
       <div class="fc-expand-cond">
         <div class="fc-expand-cond-label">${d.label}</div>
         <div class="fc-expand-day-label">${d.day}</div>
@@ -2417,7 +2417,11 @@ function fcToggle(el, cardIdx) {
       </div>
     </div>`;
 
-  expand.classList.add('open');
+  // Animate open using actual content height
+  expand.style.height = '0';
+  requestAnimationFrame(() => {
+    expand.style.height = expand.scrollHeight + 'px';
+  });
 }
 
 // ── DARK MODE ─────────────────────────────────────────────────────────────────
