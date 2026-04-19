@@ -3717,20 +3717,63 @@ function saveQuickNote() {
 }
 
 // ── SERVICE WORKER ────────────────────────────────────────────────────────────
-// Deploy sw.js alongside index.html for full offline/PWA support.
-// Minimal sw.js:
-//   const CACHE = 'doldrums-v1';
-//   self.addEventListener('install', e => e.waitUntil(
-//     caches.open(CACHE).then(c => c.addAll(['/']))
-//   ));
-//   self.addEventListener('fetch', e => e.respondWith(
-//     caches.match(e.request).then(r => r || fetch(e.request))
-//   ));
 if('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js').catch(() => {});
+    navigator.serviceWorker.register('/sw.js').then(reg => {
+      // Check for updates in the background
+      reg.addEventListener('updatefound', () => {
+        const newSW = reg.installing;
+        newSW.addEventListener('statechange', () => {
+          if(newSW.state === 'installed' && navigator.serviceWorker.controller) {
+            // New version available — silently activate on next visit
+            newSW.postMessage({ type: 'SKIP_WAITING' });
+          }
+        });
+      });
+    }).catch(() => {});
   });
 }
+
+// ── RADAR PRELOAD ─────────────────────────────────────────────────────────────
+let _radarPreloaded = false;
+
+async function preloadRadar() {
+  if(_radarPreloaded || _radarFrames.length > 0) return;
+  _radarPreloaded = true;
+  try {
+    // Fetch the frame manifest so it's cached and ready
+    const res = await fetch('https://api.rainviewer.com/public/weather-maps.json');
+    if(!res.ok) return;
+    const data = await res.json();
+    // Pre-fetch the first and last radar tile at zoom 6 around first city
+    const loc = LOCATIONS[0];
+    if(!loc || !data.radar?.past?.length) return;
+    const host = data.host;
+    const frames = [...(data.radar.past || []), ...(data.radar.nowcast || [])];
+    // Pre-cache just the last 3 frames — enough to start animation instantly
+    const toPreload = frames.slice(-3);
+    const z = 6;
+    // Convert lat/lon to tile coords
+    const n = Math.pow(2, z);
+    const xt = Math.floor((loc.lon + 180) / 360 * n);
+    const yt = Math.floor((1 - Math.log(Math.tan(loc.lat * Math.PI/180) + 1/Math.cos(loc.lat * Math.PI/180)) / Math.PI) / 2 * n);
+    toPreload.forEach(frame => {
+      const img = new Image();
+      img.src = `${host}${frame.path}/256/${z}/${xt}/${yt}/2/1_1.png`;
+    });
+  } catch(e) {}
+}
+
+// Preload radar when user hovers/touches the radar nav item
+document.addEventListener('DOMContentLoaded', () => {
+  const radarBtn = document.querySelector('.bottom-nav-item[data-view="radar"], .nav-item[onclick*="radar"]');
+  if(radarBtn) {
+    radarBtn.addEventListener('mouseenter', preloadRadar, {once:true});
+    radarBtn.addEventListener('touchstart', preloadRadar, {once:true, passive:true});
+  }
+  // Also preload after 8 seconds idle on conditions view
+  setTimeout(() => { if(currentView === 'conditions') preloadRadar(); }, 8000);
+});
 
 </script>
 
