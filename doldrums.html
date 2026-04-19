@@ -1445,6 +1445,7 @@
       .bottom-nav-item.active .bottom-nav-label { color:#fff; }
 
       body { padding-bottom:calc(60px + env(safe-area-inset-bottom)); }
+      footer { display:none; }
       .fab { bottom:calc(72px + env(safe-area-inset-bottom)) !important; right:auto; left:16px; width:40px; height:40px; font-size:17px; }
     }
 
@@ -3706,6 +3707,55 @@ function addNote() {
   updateNoteCount();
   renderLogView();
 }
+function editNote(ts) {
+  const notes = getNotes();
+  const note = notes.find(n => n.ts === ts);
+  if(!note) return;
+
+  // Open quick note sheet pre-filled with this note's text
+  const overlay = document.getElementById('qn-overlay');
+  const ta = document.getElementById('qn-ta');
+  if(!overlay || !ta) return;
+
+  ta.value = note.text;
+  overlay.classList.add('open');
+  qnUpdateMeta();
+  qnInput();
+
+  // Override save to update instead of create
+  const saveBtn = document.getElementById('qn-save');
+  if(saveBtn) saveBtn.textContent = 'Update';
+
+  // Swap saveQuickNote for this session
+  window._editingNoteTs = ts;
+  setTimeout(() => ta?.focus(), 120);
+}
+
+const _origSaveQuickNote = saveQuickNote;
+function saveQuickNote() {
+  if(window._editingNoteTs) {
+    const ta = document.getElementById('qn-ta');
+    const text = ta?.value.trim();
+    if(!text) { window._editingNoteTs = null; return; }
+    haptic('success');
+    const notes = getNotes().map(n =>
+      n.ts === window._editingNoteTs ? {...n, text, edited: Date.now()} : n
+    );
+    saveNotes(notes);
+    ta.value = '';
+    window._editingNoteTs = null;
+    const saveBtn = document.getElementById('qn-save');
+    if(saveBtn) saveBtn.textContent = 'Save';
+    qnInput();
+    dismissQuickNote();
+    if(currentView === 'log') renderLogView();
+    const fab = document.getElementById('fab');
+    if(fab) { fab.textContent='✓'; fab.style.background='var(--orange)'; setTimeout(()=>{fab.textContent='✏';fab.style.background='';},1400); }
+    return;
+  }
+  _origSaveQuickNote();
+}
+
 function deleteNote(ts) {
   const notes = getNotes().filter(n => n.ts !== ts);
   saveNotes(notes);
@@ -3733,11 +3783,12 @@ function renderLogView() {
         Field Note
       </div>
       <textarea class="note-textarea" id="note-textarea" placeholder="Record an observation, something you noticed, or a personal note…"
+        spellcheck="true" autocorrect="on"
         oninput="updateNoteCount()"
         onkeydown="if((event.ctrlKey||event.metaKey)&&event.key==='Enter'){addNote();event.preventDefault();}"></textarea>
       <div class="note-composer-foot">
         <span class="note-char-count" id="note-char-count">0 chars</span>
-        <button class="note-save-btn" id="note-save-btn" onclick="addNote()" disabled>Save Note ⌘↵</button>
+        <button class="note-save-btn" id="note-save-btn" onclick="addNote()" disabled>Save</button>
       </div>
     </div>`;
 
@@ -3812,7 +3863,10 @@ function renderLogView() {
           <div class="log-note-text">${e.text.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>
           <div class="log-note-meta">${timeStr}</div>
         </div>
-        <button class="log-note-del" onclick="deleteNote(${e.ts})" title="Delete note">✕</button>
+        <div style="display:flex;gap:6px;flex-shrink:0">
+          <button class="log-note-del" onclick="editNote(${e.ts})" title="Edit" style="color:var(--navy3);opacity:0.7">✎</button>
+          <button class="log-note-del" onclick="deleteNote(${e.ts})" title="Delete">✕</button>
+        </div>
       </div>`;
     }
   });
@@ -3824,7 +3878,7 @@ function renderLogView() {
       <span class="log-count">${totalLabel}</span>
       <div style="display:flex;gap:8px;">
         <button class="log-export-btn" onclick="exportLog()">↓ CSV</button>
-        <button class="log-clear-btn" onclick="clearLog()">Clear Obs</button>
+        <button class="log-clear-btn" onclick="clearLog()">Clear data</button>
       </div>
     </div>
     ${streamHTML}
@@ -3870,26 +3924,52 @@ function dismissInstall() {
     el.style.letterSpacing = '-.02em';
   }
 })();
+let _qnCityIdx = 0;
+
+function qnUpdateMeta() {
+  const meta = document.getElementById('qn-meta');
+  if(!meta) return;
+  const now = new Date().toLocaleString('en-US',{
+    weekday:'short', month:'short', day:'numeric',
+    hour:'numeric', minute:'2-digit', hour12:true
+  });
+  if(LOCATIONS.length === 0) {
+    meta.textContent = now;
+    return;
+  }
+  const loc = LOCATIONS[_qnCityIdx];
+  const cond = document.getElementById('cond-' + _qnCityIdx)?.textContent || '';
+  const temp = document.getElementById('sum-temp-' + _qnCityIdx)?.textContent || '';
+  const cityStr = loc.name + (LOCATIONS.length > 1 ? ' ›' : '');
+  meta.innerHTML = `${now}<br><span style="color:var(--orange2)">${cityStr}</span>${cond ? ' · '+cond : ''}${temp ? ' · '+temp : ''}`;
+}
+
+function qnCycleCity() {
+  if(LOCATIONS.length <= 1) return;
+  _qnCityIdx = (_qnCityIdx + 1) % LOCATIONS.length;
+  haptic('light');
+  qnUpdateMeta();
+}
+
 function openQuickNote() {
   const overlay = document.getElementById('qn-overlay');
   const ta = document.getElementById('qn-ta');
   overlay.classList.add('open');
-  // Populate meta line with current conditions if available
-  const meta = document.getElementById('qn-meta');
-  if(meta) {
-    const now = new Date().toLocaleString('en-US',{
-      weekday:'short', month:'short', day:'numeric',
-      hour:'numeric', minute:'2-digit', hour12:true
-    });
-    const loc = LOCATIONS[0];
-    const cond = loc ? document.getElementById('cond-0')?.textContent : null;
-    const temp = loc ? document.getElementById('sum-temp-0')?.textContent : null;
-    meta.innerHTML = now + (loc ? `<br>${loc.name}${cond ? ' · '+cond : ''}${temp ? ' · '+temp : ''}` : '');
-  }
+  _qnCityIdx = 0;
+  qnUpdateMeta();
   setTimeout(() => ta?.focus(), 120);
 }
 
 function closeQuickNote() {
+  const ta = document.getElementById('qn-ta');
+  if(ta?.value.trim()) {
+    // Auto-save unsaved text then close
+    saveQuickNote();
+    return; // saveQuickNote calls dismissQuickNote
+  }
+  dismissQuickNote();
+}
+function dismissQuickNote() {
   document.getElementById('qn-overlay').classList.remove('open');
 }
 
@@ -3913,7 +3993,7 @@ function saveQuickNote() {
   saveNotes(notes);
   ta.value = '';
   qnInput();
-  closeQuickNote();
+  dismissQuickNote();
   // If we're already on the log view, refresh it
   if(currentView === 'log') renderLogView();
   // Brief confirmation flash on FAB
@@ -4064,11 +4144,12 @@ document.addEventListener('DOMContentLoaded', () => {
     </div>
     <textarea class="quick-note-ta" id="qn-ta"
       placeholder="What are you noticing…"
+      spellcheck="true" autocorrect="on"
       oninput="qnInput()"
       onkeydown="if((event.ctrlKey||event.metaKey)&&event.key==='Enter'){saveQuickNote();event.preventDefault();}"></textarea>
     <div class="quick-note-foot">
-      <div class="quick-note-meta" id="qn-meta"></div>
-      <button class="quick-note-save" id="qn-save" onclick="saveQuickNote()" disabled>Save ⌘↵</button>
+      <div class="quick-note-meta" id="qn-meta" style="cursor:pointer;-webkit-tap-highlight-color:transparent" onclick="qnCycleCity()" title="Tap to switch city"></div>
+      <button class="quick-note-save" id="qn-save" onclick="saveQuickNote()" disabled>Save</button>
     </div>
   </div>
 </div>
