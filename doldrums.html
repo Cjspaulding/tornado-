@@ -1027,6 +1027,111 @@
       height:100%;color:rgba(255,255,255,0.3);font-size:10px;
       letter-spacing:.14em;text-transform:uppercase;text-align:center;padding:20px;
     }
+
+    /* ── DARK MODE ────────────────────────────────────────────────────────── */
+    body.dark {
+      --ice:        #111820;
+      --ice2:       #161e28;
+      --white:      #192435;
+      --rule:       #253545;
+      --rule-dk:    #2e4460;
+      --ink:        #dce8f5;
+      --ink2:       #a8c0d8;
+      --ink3:       #7090a8;
+      --ink4:       #4a6070;
+      --ink5:       #304050;
+      --grid:       rgba(220,232,245,0.035);
+      --navy-dim:   rgba(220,232,245,0.05);
+      --navy-pale:  #1e3050;
+      --shadow:     0 1px 4px rgba(0,0,0,0.35), 0 2px 12px rgba(0,0,0,0.25);
+      --shadow-lg:  0 4px 32px rgba(0,0,0,0.5), 0 1px 4px rgba(0,0,0,0.35);
+    }
+
+    .dark-toggle {
+      background:none;border:1px solid rgba(255,255,255,0.18);
+      color:rgba(255,255,255,0.45);font-family:'IBM Plex Mono',monospace;
+      font-size:13px;padding:5px 10px;cursor:pointer;
+      transition:all .2s;line-height:1;
+    }
+    .dark-toggle:hover { background:rgba(255,255,255,0.08);color:#fff;border-color:rgba(255,255,255,0.4); }
+
+    /* ── SUNRISE/SUNSET ROW ───────────────────────────────────────────────── */
+    .sun-row {
+      display:flex;align-items:center;justify-content:space-between;
+      padding:8px 18px;border-top:1px solid var(--rule);
+      background:var(--ice);position:relative;z-index:1;
+    }
+    .sun-item { display:flex;align-items:center;gap:7px; }
+    .sun-icon { font-size:13px;opacity:.7; }
+    .sun-label { font-size:7px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink4);margin-bottom:2px; }
+    .sun-time {
+      font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:300;
+      color:var(--ink2);line-height:1;
+    }
+    .sun-sep { color:var(--ink5);font-size:10px; }
+    .sun-uv {
+      display:flex;align-items:center;gap:6px;
+    }
+    .sun-uv-val {
+      font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:300;line-height:1;
+    }
+    .sun-uv-label { font-size:7px;letter-spacing:.14em;text-transform:uppercase; }
+
+    /* ── LOG NOTE COMPOSER ────────────────────────────────────────────────── */
+    .note-composer {
+      background:var(--white);border:1px solid var(--rule);
+      border-left:3px solid var(--navy3);margin-bottom:16px;
+      box-shadow:var(--shadow);
+    }
+    .note-composer-head {
+      padding:8px 14px;background:var(--ice);border-bottom:1px solid var(--rule);
+      font-size:8px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink4);
+      display:flex;align-items:center;gap:8px;
+    }
+    .note-composer-dot {
+      width:6px;height:6px;border-radius:50%;background:var(--navy3);flex-shrink:0;
+    }
+    .note-textarea {
+      width:100%;min-height:72px;padding:12px 14px;resize:vertical;
+      font-family:'IBM Plex Mono',monospace;font-size:11px;line-height:1.6;
+      color:var(--ink);background:var(--white);
+      border:none;outline:none;
+    }
+    .note-textarea::placeholder { color:var(--ink5); }
+    .note-composer-foot {
+      padding:8px 14px;border-top:1px solid var(--rule);background:var(--ice);
+      display:flex;align-items:center;justify-content:space-between;
+    }
+    .note-char-count { font-size:8px;color:var(--ink5);letter-spacing:.1em; }
+    .note-save-btn {
+      background:var(--navy);color:#fff;border:none;
+      font-family:'IBM Plex Mono',monospace;font-size:8.5px;letter-spacing:.16em;
+      text-transform:uppercase;padding:6px 16px;cursor:pointer;transition:background .2s;
+    }
+    .note-save-btn:hover { background:var(--navy2); }
+    .note-save-btn:disabled { opacity:.4;cursor:not-allowed; }
+
+    /* Note entries in log */
+    .log-note-row {
+      display:flex;align-items:flex-start;gap:14px;
+      padding:12px 16px;background:var(--white);
+      border:1px solid var(--rule);border-left:3px solid var(--navy3);
+      margin-bottom:3px;
+    }
+    .log-note-icon { font-size:16px;flex-shrink:0;opacity:.6;margin-top:1px; }
+    .log-note-text {
+      font-family:'IBM Plex Mono',monospace;font-size:11px;line-height:1.6;
+      color:var(--ink2);flex:1;white-space:pre-wrap;word-break:break-word;
+    }
+    .log-note-meta {
+      font-size:7.5px;color:var(--ink4);letter-spacing:.1em;
+      text-transform:uppercase;margin-top:5px;
+    }
+    .log-note-del {
+      background:none;border:none;color:var(--ink5);cursor:pointer;
+      font-size:14px;padding:0 2px;transition:color .2s;opacity:.4;flex-shrink:0;
+    }
+    .log-note-del:hover { color:var(--orange);opacity:1; }
   </style>
 </head>
 <body>
@@ -1076,6 +1181,7 @@
   </div>
   <div style="display:flex;align-items:center;gap:12px;">
     <div class="sticky-status" id="sticky-count"></div>
+    <button onclick="toggleDark()" class="dark-toggle" id="dark-toggle-btn" title="Toggle dark mode">☽</button>
     <button onclick="shareUrl()" style="background:none;border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.4);font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:.14em;text-transform:uppercase;padding:4px 10px;cursor:pointer;transition:all .2s;" onmouseover="this.style.color='rgba(255,255,255,0.8)'" onmouseout="this.style.color='rgba(255,255,255,0.4)'">↗ Share</button>
   </div>
 </div>
@@ -1355,6 +1461,29 @@ function buildGrid() {
 function scrollToCard(i){document.getElementById(`card-${i}`)?.scrollIntoView({behavior:'smooth',block:'start'});}
 
 // ── RENDER CARD ───────────────────────────────────────────────────────────────
+function uvLabel(uv) {
+  if(!uv||uv<3) return 'Low';
+  if(uv<6) return 'Moderate';
+  if(uv<8) return 'High';
+  if(uv<11) return 'V. High';
+  return 'Extreme';
+}
+function uvColor(uv) {
+  if(!uv||uv<3) return 'var(--ink3)';
+  if(uv<6) return '#c8900a';
+  if(uv<8) return 'var(--orange)';
+  if(uv<11) return '#c00';
+  return '#8a0000';
+}
+function formatSunTime(isoStr) {
+  if(!isoStr) return '—';
+  const t = isoStr.includes('T') ? isoStr.split('T')[1] : isoStr;
+  const [h,m] = t.split(':').map(Number);
+  const ampm = h < 12 ? 'am' : 'pm';
+  const h12 = h === 0 ? 12 : h > 12 ? h - 12 : h;
+  return `${h12}:${String(m).padStart(2,'0')}${ampm}`;
+}
+
 function renderCard(i, loc, data) {
   const c=data.current, daily=data.daily;
   const w=wmo(c.weather_code);
@@ -1431,6 +1560,31 @@ function renderCard(i, loc, data) {
         <div class="forecast-rule"></div>
       </div>
       <div class="forecast-strip">${fcast}</div>
+    </div>
+    <div class="sun-row">
+      <div class="sun-item">
+        <span class="sun-icon">🌅</span>
+        <div>
+          <div class="sun-label">Sunrise</div>
+          <div class="sun-time">${formatSunTime(daily.sunrise?.[0])}</div>
+        </div>
+      </div>
+      <div class="sun-sep">·</div>
+      <div class="sun-item">
+        <span class="sun-icon">🌇</span>
+        <div>
+          <div class="sun-label">Sunset</div>
+          <div class="sun-time">${formatSunTime(daily.sunset?.[0])}</div>
+        </div>
+      </div>
+      <div class="sun-sep">·</div>
+      <div class="sun-uv">
+        <div>
+          <div class="sun-label">UV Index</div>
+          <div class="sun-uv-val" style="color:${uvColor(c.uv_index)}">${c.uv_index != null ? Math.round(c.uv_index) : '—'}</div>
+        </div>
+        <div class="sun-uv-label" style="color:${uvColor(c.uv_index)}">${uvLabel(c.uv_index)}</div>
+      </div>
     </div>`;
 }
 
@@ -1444,8 +1598,8 @@ async function fetchWeather(loc,i){
   await new Promise(r=>setTimeout(r,i*350));
   const p=new URLSearchParams({
     latitude:loc.lat,longitude:loc.lon,
-    current:'temperature_2m,apparent_temperature,relative_humidity_2m,precipitation,rain,wind_speed_10m,wind_direction_10m,wind_gusts_10m,weather_code',
-    daily:'weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,wind_speed_10m_max',
+    current:'temperature_2m,apparent_temperature,relative_humidity_2m,precipitation,rain,wind_speed_10m,wind_direction_10m,wind_gusts_10m,weather_code,uv_index',
+    daily:'weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,wind_speed_10m_max,sunrise,sunset',
     temperature_unit:loc.unit,wind_speed_unit:loc.windUnit,
     precipitation_unit:loc.precUnit,timezone:loc.tz,forecast_days:7,
   });
@@ -1995,6 +2149,21 @@ function appendCard(loc, i) {
   ['station-count','sticky-count'].forEach(id => { const e = document.getElementById(id); if(e) e.textContent = count; });
 }
 
+// ── DARK MODE ─────────────────────────────────────────────────────────────────
+function toggleDark() {
+  const isDark = document.body.classList.toggle('dark');
+  localStorage.setItem('doldrums_dark', isDark ? '1' : '0');
+  const btn = document.getElementById('dark-toggle-btn');
+  if(btn) btn.textContent = isDark ? '☀' : '☽';
+}
+(function initDark() {
+  if(localStorage.getItem('doldrums_dark') === '1') {
+    document.body.classList.add('dark');
+    const btn = document.getElementById('dark-toggle-btn');
+    if(btn) btn.textContent = '☀';
+  }
+})();
+
 // ── INIT ──────────────────────────────────────────────────────────────────────
 refreshAll();
 
@@ -2276,6 +2445,9 @@ async function renderRadarView() {
         <div class="radar-frames" id="radar-frames"></div>
         <div class="radar-time-label" id="radar-time-label">—</div>
       </div>
+      <button class="radar-play-btn" id="wind-toggle-btn" onclick="toggleWindLayer()"
+        style="width:auto;padding:0 10px;font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:.12em;text-transform:uppercase;background:rgba(255,255,255,0.1);"
+        title="Toggle wind layer">Wind</button>
       <div class="radar-legend">
         <div class="radar-legend-label">Light</div>
         <div class="radar-legend-bar"></div>
@@ -2419,7 +2591,6 @@ function radarTogglePlay() {
   if(_radarPlaying) {
     _radarTimer = setInterval(() => {
       const next = (_radarCurrent + 1) % _radarFrames.length;
-      // Pause 2 extra ticks at the end before looping
       if(next === 0 && _radarCurrent === _radarFrames.length - 1) {
         setTimeout(() => radarSeek(0), 1200);
       } else {
@@ -2428,6 +2599,198 @@ function radarTogglePlay() {
     }, 500);
   } else {
     clearInterval(_radarTimer);
+  }
+}
+
+// ── WIND LAYER ────────────────────────────────────────────────────────────────
+let _windActive   = false;
+let _windCanvas   = null;
+let _windCtx      = null;
+let _windAnim     = null;
+let _windGrid     = null; // {lats[], lons[], U[][], V[][]}
+let _windParticles= [];
+const WIND_COUNT  = 600;
+
+function toggleWindLayer() {
+  _windActive = !_windActive;
+  const btn = document.getElementById('wind-toggle-btn');
+  if(btn) btn.style.background = _windActive ? 'var(--orange)' : 'rgba(255,255,255,0.1)';
+
+  if(_windActive) {
+    startWindLayer();
+  } else {
+    stopWindLayer();
+  }
+}
+
+async function startWindLayer() {
+  if(!_radarMap) return;
+
+  // Build canvas overlay
+  const mapEl = document.getElementById('radar-map');
+  if(!mapEl) return;
+
+  _windCanvas = document.createElement('canvas');
+  _windCanvas.style.cssText = 'position:absolute;top:0;left:0;pointer-events:none;z-index:500;';
+  _windCanvas.width  = mapEl.offsetWidth;
+  _windCanvas.height = mapEl.offsetHeight;
+  mapEl.style.position = 'relative';
+  mapEl.appendChild(_windCanvas);
+  _windCtx = _windCanvas.getContext('2d');
+
+  // Fetch wind grid around map center
+  await fetchWindGrid();
+  if(!_windGrid) { stopWindLayer(); return; }
+
+  // Spawn particles
+  _windParticles = Array.from({length: WIND_COUNT}, () => spawnParticle(true));
+
+  // Start animation
+  function frame() {
+    if(!_windActive) return;
+    drawWind();
+    _windAnim = requestAnimationFrame(frame);
+  }
+  _windAnim = requestAnimationFrame(frame);
+
+  // Refetch on map move
+  _radarMap.on('moveend', onMapMoveWind);
+}
+
+function stopWindLayer() {
+  _windActive = false;
+  if(_windAnim) { cancelAnimationFrame(_windAnim); _windAnim = null; }
+  if(_windCanvas) { _windCanvas.remove(); _windCanvas = null; _windCtx = null; }
+  _windGrid = null;
+  _windParticles = [];
+  if(_radarMap) _radarMap.off('moveend', onMapMoveWind);
+}
+
+async function onMapMoveWind() {
+  _windParticles = [];
+  await fetchWindGrid();
+  if(_windGrid) _windParticles = Array.from({length: WIND_COUNT}, () => spawnParticle(true));
+}
+
+async function fetchWindGrid() {
+  if(!_radarMap) return;
+  const c = _radarMap.getCenter();
+  const z = _radarMap.getZoom();
+  // Grid step in degrees: smaller at higher zoom
+  const step = z >= 9 ? 0.4 : z >= 7 ? 0.8 : 1.5;
+  const rows = 4, cols = 4;
+
+  const lats = Array.from({length:rows}, (_, r) => c.lat + (r - Math.floor(rows/2)) * step);
+  const lons = Array.from({length:cols}, (_, col) => c.lng + (col - Math.floor(cols/2)) * step);
+
+  // Fetch all grid points in parallel
+  const fetches = lats.flatMap(lat => lons.map(lon =>
+    fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat.toFixed(3)}&longitude=${lon.toFixed(3)}&current=wind_speed_10m,wind_direction_10m&wind_speed_unit=ms&timezone=auto&forecast_days=1`)
+      .then(r => r.json())
+      .catch(() => null)
+  ));
+
+  try {
+    const results = await Promise.all(fetches);
+    const U = [], V = [];
+    let idx = 0;
+    for(let r = 0; r < rows; r++) {
+      U.push([]); V.push([]);
+      for(let col = 0; col < cols; col++) {
+        const d = results[idx++];
+        const spd = d?.current?.wind_speed_10m ?? 0;
+        const dir = d?.current?.wind_direction_10m ?? 0;
+        const rad = dir * Math.PI / 180;
+        U[r].push(spd * Math.sin(rad));   // east component
+        V[r].push(-spd * Math.cos(rad));  // south component (canvas y inverted)
+      }
+    }
+    _windGrid = { lats, lons, U, V };
+  } catch(e) { _windGrid = null; }
+}
+
+function interpWind(lat, lon) {
+  if(!_windGrid) return {u:0,v:0,spd:0};
+  const {lats, lons, U, V} = _windGrid;
+
+  // Clamp to grid bounds
+  const r1 = Math.max(0, lats.findIndex(l => l >= lat) - 1);
+  const r2 = Math.min(lats.length-1, r1+1);
+  const c1 = Math.max(0, lons.findIndex(l => l >= lon) - 1);
+  const c2 = Math.min(lons.length-1, c1+1);
+
+  const ty = lats[r2] !== lats[r1] ? (lat - lats[r1]) / (lats[r2] - lats[r1]) : 0.5;
+  const tx = lons[c2] !== lons[c1] ? (lon - lons[c1]) / (lons[c2] - lons[c1]) : 0.5;
+
+  const u = U[r1][c1]*(1-tx)*(1-ty) + U[r1][c2]*tx*(1-ty)
+           + U[r2][c1]*(1-tx)*ty    + U[r2][c2]*tx*ty;
+  const v = V[r1][c1]*(1-tx)*(1-ty) + V[r1][c2]*tx*(1-ty)
+           + V[r2][c1]*(1-tx)*ty    + V[r2][c2]*tx*ty;
+  return {u, v, spd: Math.sqrt(u*u+v*v)};
+}
+
+function spawnParticle(randomAge) {
+  const w = _windCanvas?.width || 800;
+  const h = _windCanvas?.height || 500;
+  return {
+    x: Math.random() * w,
+    y: Math.random() * h,
+    age: randomAge ? Math.random() * 80 : 0,
+    maxAge: 60 + Math.random() * 60,
+  };
+}
+
+function windColor(spd) {
+  // 0→5 m/s: blue-white, 5→10: cyan, 10→15: yellow, 15+: orange
+  if(spd < 3)  return `rgba(180,210,255,`;
+  if(spd < 7)  return `rgba(80,200,220,`;
+  if(spd < 12) return `rgba(240,200,60,`;
+  return `rgba(224,92,26,`;
+}
+
+function drawWind() {
+  if(!_windCtx || !_windCanvas || !_radarMap) return;
+  const w = _windCanvas.width, h = _windCanvas.height;
+
+  // Fade trail
+  _windCtx.globalAlpha = 0.08;
+  _windCtx.fillStyle = '#0b1929';
+  _windCtx.fillRect(0, 0, w, h);
+  _windCtx.globalAlpha = 1;
+
+  const scale = 0.35; // pixels per m/s per frame
+
+  for(let i = 0; i < _windParticles.length; i++) {
+    const p = _windParticles[i];
+    p.age++;
+
+    // Get lat/lon for this pixel
+    let ll;
+    try { ll = _radarMap.containerPointToLatLng([p.x, p.y]); }
+    catch(e) { _windParticles[i] = spawnParticle(false); continue; }
+
+    const {u, v, spd} = interpWind(ll.lat, ll.lng);
+
+    // Move
+    const nx = p.x + u * scale;
+    const ny = p.y + v * scale;
+
+    // Respect age and bounds
+    const fade = Math.min(1, p.age / 15) * Math.max(0, 1 - (p.age - p.maxAge * 0.7) / (p.maxAge * 0.3));
+
+    if(p.age > p.maxAge || nx < 0 || nx > w || ny < 0 || ny > h || spd < 0.1) {
+      _windParticles[i] = spawnParticle(false);
+      continue;
+    }
+
+    _windCtx.beginPath();
+    _windCtx.moveTo(p.x, p.y);
+    _windCtx.lineTo(nx, ny);
+    _windCtx.strokeStyle = windColor(spd) + (fade * 0.75) + ')';
+    _windCtx.lineWidth = spd > 10 ? 1.5 : 1;
+    _windCtx.stroke();
+
+    p.x = nx; p.y = ny;
   }
 }
 
@@ -2517,59 +2880,162 @@ function exportLog() {
   a.click();
 }
 
+// ── LOG NOTES ─────────────────────────────────────────────────────────────────
+function getNotes() {
+  try { return JSON.parse(localStorage.getItem('doldrums_notes') || '[]'); } catch(e) { return []; }
+}
+function saveNotes(arr) {
+  localStorage.setItem('doldrums_notes', JSON.stringify(arr.slice(-200)));
+}
+function addNote() {
+  const ta = document.getElementById('note-textarea');
+  if(!ta) return;
+  const text = ta.value.trim();
+  if(!text) return;
+  const notes = getNotes();
+  notes.push({ ts: Date.now(), text, type: 'note' });
+  saveNotes(notes);
+  ta.value = '';
+  updateNoteCount();
+  renderLogView();
+}
+function deleteNote(ts) {
+  const notes = getNotes().filter(n => n.ts !== ts);
+  saveNotes(notes);
+  renderLogView();
+}
+function updateNoteCount() {
+  const ta = document.getElementById('note-textarea');
+  const cc = document.getElementById('note-char-count');
+  if(cc && ta) cc.textContent = `${ta.value.length} chars`;
+  const btn = document.getElementById('note-save-btn');
+  if(btn) btn.disabled = !ta?.value.trim();
+}
+
 function renderLogView() {
   const main = document.querySelector('main');
-  const log  = getObsLog().slice().reverse();
 
-  if(log.length === 0) {
-    main.innerHTML = `<div class="empty-state">
-      <div class="empty-icon" style="font-size:42px;opacity:.35">📋</div>
-      <div class="empty-title">No observations yet</div>
-      <div class="empty-sub">Readings are logged automatically on each refresh.</div>
+  // Merge obs + notes sorted newest-first
+  const obs   = getObsLog().map(e => ({...e, type:'obs'}));
+  const notes = getNotes();
+  const all   = [...obs, ...notes].sort((a,b) => b.ts - a.ts);
+
+  const composerHTML = `
+    <div class="note-composer">
+      <div class="note-composer-head">
+        <div class="note-composer-dot"></div>
+        Field Note
+      </div>
+      <textarea class="note-textarea" id="note-textarea" placeholder="Record an observation, something you noticed, or a personal note…"
+        oninput="updateNoteCount()"
+        onkeydown="if((event.ctrlKey||event.metaKey)&&event.key==='Enter'){addNote();event.preventDefault();}"></textarea>
+      <div class="note-composer-foot">
+        <span class="note-char-count" id="note-char-count">0 chars</span>
+        <button class="note-save-btn" id="note-save-btn" onclick="addNote()" disabled>Save Note ⌘↵</button>
+      </div>
+    </div>`;
+
+  if(all.length === 0) {
+    main.innerHTML = `<div style="padding:0 16px 40px">
+      ${composerHTML}
+      <div class="empty-state" style="min-height:30vh">
+        <div class="empty-icon" style="font-size:36px;opacity:.3">📋</div>
+        <div class="empty-title">No entries yet</div>
+        <div class="empty-sub">Readings log automatically on each refresh. Add your first field note above.</div>
+      </div>
     </div>`;
     return;
   }
 
-  main.innerHTML = `<div class="log-view">
+  const obsEntries = all.filter(e => e.type === 'obs');
+  const noteEntries = all.filter(e => e.type === 'note');
+  const totalLabel = `${obsEntries.length} observation${obsEntries.length !== 1 ? 's' : ''}${noteEntries.length > 0 ? ` · ${noteEntries.length} note${noteEntries.length !== 1 ? 's' : ''}` : ''}`;
+
+  const entriesHTML = all.map(e => {
+    const timeStr = new Date(e.ts).toLocaleString('en-US', {
+      month:'numeric', day:'numeric', hour:'numeric', minute:'2-digit', hour12:true
+    });
+
+    if(e.type === 'note') {
+      return `<div class="log-note-row">
+        <div class="log-note-icon">✏️</div>
+        <div style="flex:1;min-width:0">
+          <div class="log-note-text">${e.text.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>
+          <div class="log-note-meta">${timeStr}</div>
+        </div>
+        <button class="log-note-del" onclick="deleteNote(${e.ts})" title="Delete note">✕</button>
+      </div>`;
+    }
+
+    // obs row
+    return `<tr class="log-row">
+      <td class="log-td log-time">${timeStr}</td>
+      <td class="log-td">
+        <div class="log-loc-name">${e.name}</div>
+        <div class="log-loc-state">${e.state || 'INTL'}</div>
+      </td>
+      <td class="log-td">
+        <span class="log-cond-icon">${e.icon || '—'}</span>
+        <span class="log-cond-label">${e.condition || ''}</span>
+      </td>
+      <td class="log-td log-num">${e.temp !== undefined ? e.temp + (e.sym || '°') : '—'}</td>
+      <td class="log-td log-num">${e.pressure ? e.pressure + '<span style="font-size:9px;color:var(--ink4)"> hPa</span>' : '—'}</td>
+      <td class="log-td log-num">${e.wind !== undefined ? e.wind + '<span style="font-size:9px;color:var(--ink4)"> ' + (e.windUnit||'') + '</span>' : '—'}</td>
+    </tr>`;
+  });
+
+  // Build mixed output: notes as divs, obs rows wrapped in table
+  // Group consecutive obs rows into tables
+  let html = '';
+  let tableOpen = false;
+  all.forEach(e => {
+    if(e.type === 'obs') {
+      if(!tableOpen) {
+        html += `<table class="log-table"><thead><tr>
+          <th class="log-th">Time</th><th class="log-th">Location</th>
+          <th class="log-th">Condition</th><th class="log-th">Temp</th>
+          <th class="log-th">Pressure</th><th class="log-th">Wind</th>
+        </tr></thead><tbody>`;
+        tableOpen = true;
+      }
+      const timeStr = new Date(e.ts).toLocaleString('en-US', {
+        month:'numeric', day:'numeric', hour:'numeric', minute:'2-digit', hour12:true
+      });
+      html += `<tr class="log-row">
+        <td class="log-td log-time">${timeStr}</td>
+        <td class="log-td"><div class="log-loc-name">${e.name}</div><div class="log-loc-state">${e.state||'INTL'}</div></td>
+        <td class="log-td"><span class="log-cond-icon">${e.icon||'—'}</span><span class="log-cond-label">${e.condition||''}</span></td>
+        <td class="log-td log-num">${e.temp !== undefined ? e.temp+(e.sym||'°') : '—'}</td>
+        <td class="log-td log-num">${e.pressure ? e.pressure+'<span style="font-size:9px;color:var(--ink4)"> hPa</span>' : '—'}</td>
+        <td class="log-td log-num">${e.wind !== undefined ? e.wind+'<span style="font-size:9px;color:var(--ink4)"> '+(e.windUnit||'')+'</span>' : '—'}</td>
+      </tr>`;
+    } else {
+      if(tableOpen) { html += '</tbody></table>'; tableOpen = false; }
+      const timeStr = new Date(e.ts).toLocaleString('en-US', {
+        month:'numeric', day:'numeric', hour:'numeric', minute:'2-digit', hour12:true
+      });
+      html += `<div class="log-note-row" style="margin-bottom:3px">
+        <div class="log-note-icon">✏️</div>
+        <div style="flex:1;min-width:0">
+          <div class="log-note-text">${e.text.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>
+          <div class="log-note-meta">${timeStr}</div>
+        </div>
+        <button class="log-note-del" onclick="deleteNote(${e.ts})" title="Delete note">✕</button>
+      </div>`;
+    }
+  });
+  if(tableOpen) html += '</tbody></table>';
+
+  main.innerHTML = `<div class="log-view" style="padding:0 16px 40px">
+    ${composerHTML}
     <div class="log-toolbar">
-      <span class="log-count">${log.length} observation${log.length !== 1 ? 's' : ''}</span>
+      <span class="log-count">${totalLabel}</span>
       <div style="display:flex;gap:8px;">
         <button class="log-export-btn" onclick="exportLog()">↓ CSV</button>
-        <button class="log-clear-btn" onclick="clearLog()">Clear</button>
+        <button class="log-clear-btn" onclick="clearLog()">Clear Obs</button>
       </div>
     </div>
-    <table class="log-table">
-      <thead>
-        <tr>
-          <th class="log-th">Time</th>
-          <th class="log-th">Location</th>
-          <th class="log-th">Condition</th>
-          <th class="log-th">Temp</th>
-          <th class="log-th">Pressure</th>
-          <th class="log-th">Wind</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${log.map(e => `
-          <tr class="log-row">
-            <td class="log-td log-time">${new Date(e.ts).toLocaleString('en-US',{
-              month:'numeric', day:'numeric',
-              hour:'numeric', minute:'2-digit', hour12:true
-            })}</td>
-            <td class="log-td">
-              <div class="log-loc-name">${e.name}</div>
-              <div class="log-loc-state">${e.state || 'INTL'}</div>
-            </td>
-            <td class="log-td">
-              <span class="log-cond-icon">${e.icon || '—'}</span>
-              <span class="log-cond-label">${e.condition || ''}</span>
-            </td>
-            <td class="log-td log-num">${e.temp !== undefined ? e.temp + (e.sym || '°') : '—'}</td>
-            <td class="log-td log-num">${e.pressure ? e.pressure + '<span style="font-size:9px;color:var(--ink4)"> hPa</span>' : '—'}</td>
-            <td class="log-td log-num">${e.wind !== undefined ? e.wind + '<span style="font-size:9px;color:var(--ink4)"> ' + (e.windUnit||'') + '</span>' : '—'}</td>
-          </tr>`).join('')}
-      </tbody>
-    </table>
+    ${html}
   </div>`;
 }
 
