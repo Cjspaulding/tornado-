@@ -880,6 +880,153 @@
       font-size:17px;padding:0;flex-shrink:0;transition:color .2s;
     }
     .install-dismiss:hover { color:rgba(255,255,255,0.7); }
+
+    /* ── HOURLY VIEW ──────────────────────────────────────────────────────── */
+    .hourly-view { display:flex;flex-direction:column;gap:14px;padding:0 16px 40px; }
+    @media(max-width:540px){ .hourly-view{padding:0 10px 28px;} }
+
+    .hv-card {
+      background:var(--white);border:1px solid var(--rule);overflow:hidden;
+      box-shadow:var(--shadow);animation:cardIn .6s cubic-bezier(.22,1,.36,1) both;
+    }
+
+    .hv-head {
+      padding:12px 18px 10px;display:flex;justify-content:space-between;align-items:center;
+      border-bottom:1px solid var(--rule);background:var(--ice);
+    }
+
+    .hv-head-left {}
+    .hv-city-name {
+      font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:300;
+      letter-spacing:.03em;color:var(--ink);line-height:1;
+    }
+    .hv-city-sub {
+      font-size:7.5px;color:var(--ink4);letter-spacing:.16em;text-transform:uppercase;margin-top:4px;
+    }
+    .hv-head-right {
+      font-family:'Cormorant Garamond',serif;font-size:13px;color:var(--ink4);
+      font-style:italic;letter-spacing:.03em;
+    }
+
+    .hv-strip {
+      display:flex;overflow-x:auto;scrollbar-width:thin;
+      scrollbar-color:var(--rule) transparent;
+    }
+    .hv-strip::-webkit-scrollbar { height:3px; }
+    .hv-strip::-webkit-scrollbar-thumb { background:var(--rule); }
+
+    .hv-slot {
+      flex:0 0 auto;min-width:58px;display:flex;flex-direction:column;align-items:center;
+      padding:10px 4px 12px;border-right:1px solid var(--rule);gap:4px;
+      transition:background .15s;cursor:default;position:relative;
+    }
+    .hv-slot:last-child { border-right:none; }
+    .hv-slot:hover { background:var(--navy-dim); }
+    .hv-slot.now {
+      background:var(--navy-dim);
+    }
+    .hv-slot.now::after {
+      content:'Now';position:absolute;top:0;left:50%;transform:translateX(-50%);
+      font-size:6px;letter-spacing:.14em;text-transform:uppercase;
+      background:var(--navy);color:#fff;padding:2px 5px;
+    }
+
+    .hv-time { font-size:8px;color:var(--ink4);letter-spacing:.08em;text-transform:uppercase;margin-top:4px; }
+    .hv-slot.now .hv-time { color:var(--navy2);font-weight:500; }
+    .hv-icon { display:flex;align-items:center;justify-content:center; }
+    .hv-icon svg { width:22px;height:22px; }
+    .hv-temp {
+      font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:300;
+      color:var(--navy);line-height:1;
+    }
+    .hv-precip-wrap {
+      width:36px;display:flex;flex-direction:column;align-items:center;gap:2px;
+    }
+    .hv-precip-bar-bg {
+      width:100%;height:3px;background:var(--rule);border-radius:2px;overflow:hidden;
+    }
+    .hv-precip-bar {
+      height:100%;background:var(--navy3);border-radius:2px;transition:width .3s;
+    }
+    .hv-precip-pct {
+      font-size:8px;color:var(--navy3);letter-spacing:.04em;
+    }
+    .hv-precip-pct.zero { color:var(--ink5); }
+
+    .hv-loading {
+      text-align:center;padding:48px 20px;font-size:9px;
+      color:var(--ink4);letter-spacing:.16em;text-transform:uppercase;
+    }
+
+    /* ── RADAR VIEW ───────────────────────────────────────────────────────── */
+    .radar-view {
+      display:flex;flex-direction:column;
+      height:calc(100vh - 220px);min-height:420px;
+      margin:0 16px 40px;
+      border:1px solid var(--rule);overflow:hidden;
+      box-shadow:var(--shadow-lg);
+    }
+    @media(max-width:540px){ .radar-view{margin:0 10px 28px;height:calc(100vh - 200px);} }
+
+    #radar-map { flex:1;width:100%;background:var(--navy); }
+
+    .radar-controls {
+      flex-shrink:0;background:var(--navy);border-top:2px solid var(--orange);
+      padding:9px 16px;display:flex;align-items:center;gap:12px;
+    }
+
+    .radar-play-btn {
+      background:var(--orange);color:#fff;border:none;
+      width:28px;height:28px;display:flex;align-items:center;justify-content:center;
+      cursor:pointer;font-size:12px;flex-shrink:0;transition:background .2s;
+    }
+    .radar-play-btn:hover { background:var(--orange2); }
+
+    .radar-timeline {
+      flex:1;display:flex;align-items:center;gap:6px;overflow:hidden;
+    }
+
+    .radar-frames {
+      flex:1;display:flex;gap:2px;height:20px;align-items:flex-end;
+    }
+
+    .radar-frame-tick {
+      flex:1;background:rgba(255,255,255,0.15);cursor:pointer;
+      transition:background .15s;min-width:4px;height:12px;
+      border-radius:1px;
+    }
+    .radar-frame-tick:hover { background:rgba(255,255,255,0.35); }
+    .radar-frame-tick.active { background:var(--orange2);height:20px; }
+
+    .radar-time-label {
+      font-size:9px;color:rgba(255,255,255,0.5);letter-spacing:.1em;
+      text-transform:uppercase;flex-shrink:0;min-width:80px;text-align:right;
+    }
+
+    .radar-status {
+      font-size:8.5px;color:rgba(255,255,255,0.4);letter-spacing:.1em;
+      text-transform:uppercase;flex-shrink:0;
+    }
+
+    .radar-legend {
+      display:flex;align-items:center;gap:8px;flex-shrink:0;
+    }
+    .radar-legend-bar {
+      width:60px;height:6px;
+      background:linear-gradient(to right,
+        rgba(0,80,255,0.6), rgba(0,180,255,0.6),
+        rgba(0,220,120,0.6), rgba(200,220,0,0.6),
+        rgba(255,160,0,0.6), rgba(255,40,0,0.7)
+      );
+      border-radius:2px;
+    }
+    .radar-legend-label { font-size:7.5px;color:rgba(255,255,255,0.35);letter-spacing:.1em;text-transform:uppercase; }
+
+    .radar-error {
+      display:flex;align-items:center;justify-content:center;
+      height:100%;color:rgba(255,255,255,0.3);font-size:10px;
+      letter-spacing:.14em;text-transform:uppercase;text-align:center;padding:20px;
+    }
   </style>
 </head>
 <body>
@@ -905,6 +1052,8 @@
     <div class="masthead-nav">
       <div class="nav-item active" onclick="setView('conditions')">Conditions</div>
       <div class="nav-item" onclick="setView('forecast')">Forecast</div>
+      <div class="nav-item" onclick="setView('hourly')">Hourly</div>
+      <div class="nav-item" onclick="setView('radar')">Radar</div>
       <div class="nav-item" onclick="setView('alerts')">Alerts</div>
       <div class="nav-item" onclick="setView('log')">Log</div>
     </div>
@@ -1548,6 +1697,7 @@ document.addEventListener('touchend', e => {
 let currentView = 'conditions';
 const cachedForecast = {}; // store daily data per location index
 const cachedPressure = {};  // hourly pressure per location index
+const cachedHourly   = {}; // hourly forecast per location index
 const pressureHistory = {}; // rolling last-6 readings per city for trend
 
 function setView(view) {
@@ -1562,6 +1712,8 @@ function setView(view) {
   const labels = {
     conditions: 'Surface Observations',
     forecast:   'Seven-Day Outlook',
+    hourly:     'Hourly Outlook',
+    radar:      'Precipitation Radar',
     pressure:   'Barometric Pressure',
     alerts:     'Weather Alerts',
     log:        'Observation Log',
@@ -1570,6 +1722,8 @@ function setView(view) {
 
   switch(view) {
     case 'forecast': renderForecastView(); break;
+    case 'hourly':   renderHourlyView();   break;
+    case 'radar':    renderRadarView();    break;
     case 'pressure': renderPressureView(); break;
     case 'alerts':   renderAlertsView();   break;
     case 'log':      renderLogView();      break;
@@ -2002,6 +2156,279 @@ function renderPressureCard(i, loc) {
     <div class="pv-footer">
       <span class="pv-fl">24h Range</span><span class="pv-fv">${rangeStr}</span>
     </div>`;
+}
+
+// ── HOURLY VIEW ────────────────────────────────────────────────────────────────
+async function fetchHourlyData(loc, i) {
+  const p = new URLSearchParams({
+    latitude: loc.lat, longitude: loc.lon,
+    hourly: 'temperature_2m,precipitation_probability,weather_code',
+    temperature_unit: loc.unit,
+    timezone: loc.tz, forecast_days: 2,
+  });
+  try {
+    const res = await fetch(`https://api.open-meteo.com/v1/forecast?${p}`);
+    if(!res.ok) throw new Error();
+    const data = await res.json();
+    cachedHourly[i] = data.hourly;
+  } catch(e) { cachedHourly[i] = null; }
+}
+
+function renderHourlyView() {
+  const main = document.querySelector('main');
+
+  if(LOCATIONS.length === 0) {
+    main.innerHTML = `<div class="empty-state">
+      <div class="empty-icon" style="font-size:42px;opacity:.35">🕐</div>
+      <div class="empty-title">No stations</div>
+      <div class="empty-sub">Add a city to see hourly forecasts.</div>
+      <button class="empty-btn" onclick="openModal()"><span class="empty-btn-plus">+</span> Add a city</button>
+    </div>`;
+    return;
+  }
+
+  main.innerHTML = `<div class="hourly-view" id="hourly-view-container">
+    ${LOCATIONS.map((loc, i) => `
+      <div class="hv-card" id="hv-${i}" style="animation-delay:${i*80}ms">
+        <div class="hv-head">
+          <div class="hv-head-left">
+            <div class="hv-city-name">${loc.name}</div>
+            <div class="hv-city-sub">STN-${String(i+1).padStart(3,'0')} · ${stateAbbr(loc.state)||'Intl'} · Next 24 hours</div>
+          </div>
+          <div class="hv-head-right" id="hv-head-right-${i}">${localTime(loc.tz)}</div>
+        </div>
+        <div class="hv-strip" id="hv-strip-${i}">
+          <div class="hv-loading">Loading hourly data…</div>
+        </div>
+      </div>`).join('')}
+  </div>`;
+
+  LOCATIONS.forEach(async (loc, i) => {
+    if(!cachedHourly[i]) await fetchHourlyData(loc, i);
+    renderHourlyCard(i, loc);
+  });
+}
+
+function renderHourlyCard(i, loc) {
+  const strip = document.getElementById(`hv-strip-${i}`);
+  if(!strip) return;
+  const hourly = cachedHourly[i];
+  if(!hourly) {
+    strip.innerHTML = `<div class="hv-loading" style="color:var(--orange)">⚠ Could not load hourly data</div>`;
+    return;
+  }
+
+  // Find current hour index
+  const nowLocal = new Date(new Date().toLocaleString('en-US', { timeZone: loc.tz }));
+  const currentHour = nowLocal.getHours(); // 0-23
+  // hourly.time is an array of ISO strings like "2026-04-18T00:00"
+  // Find index matching today + currentHour
+  const todayStr = nowLocal.toISOString().slice(0,10);
+  let startIdx = hourly.time.findIndex(t => t.startsWith(todayStr) && parseInt(t.slice(11,13)) === currentHour);
+  if(startIdx < 0) startIdx = 0;
+
+  const slots = hourly.time.slice(startIdx, startIdx + 25); // current + 24 hrs
+  const temps  = hourly.temperature_2m.slice(startIdx, startIdx + 25);
+  const precip = hourly.precipitation_probability.slice(startIdx, startIdx + 25);
+  const codes  = hourly.weather_code.slice(startIdx, startIdx + 25);
+
+  strip.innerHTML = slots.map((t, idx) => {
+    const hour = parseInt(t.slice(11,13));
+    const ampm = hour === 0 ? '12a' : hour < 12 ? `${hour}a` : hour === 12 ? '12p' : `${hour-12}p`;
+    const w = wmo(codes[idx]);
+    const pct = precip[idx] ?? 0;
+    const isNow = idx === 0;
+
+    return `<div class="hv-slot${isNow?' now':''}">
+      <div class="hv-time">${isNow ? '·' : ampm}</div>
+      <div class="hv-icon">${w.icon}</div>
+      <div class="hv-temp">${Math.round(temps[idx])}°</div>
+      <div class="hv-precip-wrap">
+        <div class="hv-precip-bar-bg">
+          <div class="hv-precip-bar" style="width:${pct}%"></div>
+        </div>
+        <div class="hv-precip-pct${pct === 0 ? ' zero' : ''}">${pct > 0 ? pct+'%' : '—'}</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  // Scroll the strip so "now" is visible (slight offset to show a couple slots prior)
+  setTimeout(() => { if(strip) strip.scrollLeft = 0; }, 50);
+}
+
+// ── RADAR VIEW ─────────────────────────────────────────────────────────────────
+let _radarMap      = null;
+let _radarLayers   = [];
+let _radarFrames   = [];
+let _radarCurrent  = 0;
+let _radarPlaying  = false;
+let _radarTimer    = null;
+let _radarInitDone = false;
+
+async function renderRadarView() {
+  const main = document.querySelector('main');
+
+  main.innerHTML = `<div class="radar-view">
+    <div id="radar-map"></div>
+    <div class="radar-controls">
+      <button class="radar-play-btn" id="radar-play-btn" onclick="radarTogglePlay()" title="Play/Pause">▶</button>
+      <div class="radar-timeline">
+        <div class="radar-frames" id="radar-frames"></div>
+        <div class="radar-time-label" id="radar-time-label">—</div>
+      </div>
+      <div class="radar-legend">
+        <div class="radar-legend-label">Light</div>
+        <div class="radar-legend-bar"></div>
+        <div class="radar-legend-label">Heavy</div>
+      </div>
+    </div>
+  </div>`;
+
+  // Load Leaflet if needed
+  await ensureLeaflet();
+  await initRadar();
+}
+
+function ensureLeaflet() {
+  return new Promise(resolve => {
+    if(window.L) { resolve(); return; }
+    const css = document.createElement('link');
+    css.rel = 'stylesheet';
+    css.href = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css';
+    document.head.appendChild(css);
+    const s = document.createElement('script');
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js';
+    s.onload = resolve;
+    document.head.appendChild(s);
+  });
+}
+
+async function initRadar() {
+  // Destroy any previous map instance
+  if(_radarMap) { _radarMap.remove(); _radarMap = null; }
+  clearInterval(_radarTimer);
+  _radarLayers = []; _radarFrames = []; _radarCurrent = 0; _radarPlaying = false;
+
+  const mapEl = document.getElementById('radar-map');
+  if(!mapEl) return;
+
+  // Center: first location, or continental US default
+  const center = LOCATIONS.length > 0
+    ? [LOCATIONS[0].lat, LOCATIONS[0].lon]
+    : [38.5, -96];
+  const zoom = LOCATIONS.length > 0 ? 7 : 4;
+
+  _radarMap = L.map('radar-map', { zoomControl: true, attributionControl: false }).setView(center, zoom);
+
+  // Dark base tile
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    maxZoom: 18, subdomains: 'abcd'
+  }).addTo(_radarMap);
+
+  // Location markers
+  const markerIcon = L.divIcon({
+    className: '',
+    html: `<div style="width:10px;height:10px;border-radius:50%;background:var(--orange2);
+      border:2px solid #fff;box-shadow:0 0 8px rgba(224,92,26,0.7);"></div>`,
+    iconSize: [10, 10], iconAnchor: [5, 5]
+  });
+
+  LOCATIONS.forEach(loc => {
+    L.marker([loc.lat, loc.lon], { icon: markerIcon })
+      .bindTooltip(`<div style="font-family:'IBM Plex Mono',monospace;font-size:10px;
+        letter-spacing:.08em;background:var(--navy);color:#fff;border:none;
+        padding:4px 8px;">${loc.name}${loc.state ? ', '+stateAbbr(loc.state) : ''}</div>`,
+        { permanent: false, direction: 'top', className: 'radar-tooltip', offset:[0,-6] })
+      .addTo(_radarMap);
+  });
+
+  // Fetch RainViewer frames
+  try {
+    const rv = await fetch('https://api.rainviewer.com/public/weather-maps.json');
+    const rvData = await rv.json();
+    const host = rvData.host;
+
+    // Use past frames + nowcast
+    const past     = rvData.radar.past     || [];
+    const nowcast  = rvData.radar.nowcast  || [];
+    _radarFrames = [...past, ...nowcast];
+    const nowcastStart = past.length;
+
+    if(_radarFrames.length === 0) throw new Error('No frames');
+
+    // Build tile layers (invisible initially)
+    _radarFrames.forEach((frame, idx) => {
+      const layer = L.tileLayer(
+        `${host}${frame.path}/256/{z}/{x}/{y}/2/1_1.png`,
+        { opacity: 0, zIndex: 200 + idx, tileSize: 256 }
+      ).addTo(_radarMap);
+      _radarLayers.push(layer);
+    });
+
+    // Build timeline ticks
+    const ticksEl = document.getElementById('radar-frames');
+    if(ticksEl) {
+      ticksEl.innerHTML = _radarFrames.map((f, idx) => {
+        const isNowcast = idx >= nowcastStart;
+        return `<div class="radar-frame-tick${isNowcast?' nowcast':''}"
+          id="rtick-${idx}"
+          style="${isNowcast ? 'background:rgba(200,75,17,0.25)' : ''}"
+          onclick="radarSeek(${idx})" title="${new Date(f.time*1000).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit',hour12:true})}">
+        </div>`;
+      }).join('');
+    }
+
+    // Show last frame (most recent)
+    radarSeek(_radarFrames.length - 1);
+    radarTogglePlay(); // auto-play
+
+  } catch(e) {
+    const mapEl2 = document.getElementById('radar-map');
+    if(mapEl2) mapEl2.innerHTML = `<div class="radar-error">
+      Could not load radar data.<br>Check your connection.
+    </div>`;
+  }
+}
+
+function radarSeek(idx) {
+  if(idx < 0 || idx >= _radarFrames.length) return;
+
+  // Hide current, show new
+  if(_radarLayers[_radarCurrent]) _radarLayers[_radarCurrent].setOpacity(0);
+  _radarCurrent = idx;
+  if(_radarLayers[_radarCurrent]) _radarLayers[_radarCurrent].setOpacity(0.65);
+
+  // Update tick states
+  document.querySelectorAll('.radar-frame-tick').forEach((el, i) => {
+    el.classList.toggle('active', i === idx);
+  });
+
+  // Update label
+  const label = document.getElementById('radar-time-label');
+  if(label && _radarFrames[idx]) {
+    const d = new Date(_radarFrames[idx].time * 1000);
+    label.textContent = d.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit',hour12:true});
+  }
+}
+
+function radarTogglePlay() {
+  _radarPlaying = !_radarPlaying;
+  const btn = document.getElementById('radar-play-btn');
+  if(btn) btn.textContent = _radarPlaying ? '⏸' : '▶';
+
+  if(_radarPlaying) {
+    _radarTimer = setInterval(() => {
+      const next = (_radarCurrent + 1) % _radarFrames.length;
+      // Pause 2 extra ticks at the end before looping
+      if(next === 0 && _radarCurrent === _radarFrames.length - 1) {
+        setTimeout(() => radarSeek(0), 1200);
+      } else {
+        radarSeek(next);
+      }
+    }, 500);
+  } else {
+    clearInterval(_radarTimer);
+  }
 }
 
 // ── ALERT LOG ─────────────────────────────────────────────────────────────────
