@@ -1374,7 +1374,7 @@
       .bottom-nav-item.active .bottom-nav-label { color:#fff; }
 
       body { padding-bottom:calc(60px + env(safe-area-inset-bottom)); }
-      .fab { bottom:calc(72px + env(safe-area-inset-bottom)) !important; right:auto !important; left:16px; }
+      .fab { bottom:calc(72px + env(safe-area-inset-bottom)) !important; right:22px; }
     }
 
     /* ── FAB MOBILE SAFE AREA ─────────────────────────────────────────────── */
@@ -1392,7 +1392,7 @@
       width:52px;height:52px;border-radius:50%;
       background:var(--navy);border:2px solid var(--orange);
       color:#fff;font-size:22px;cursor:pointer;
-      display:flex;align-items:center;justify-content:center;
+      display:none;align-items:center;justify-content:center;
       box-shadow:0 4px 20px rgba(11,37,69,0.35), 0 0 0 0 rgba(200,75,17,0);
       transition:transform .2s, box-shadow .2s, background .2s;
       -webkit-tap-highlight-color:transparent;
@@ -2274,6 +2274,9 @@ const pressureHistory = {}; // rolling last-6 readings per city for trend
 
 function setView(view) {
   currentView = view;
+  // Show/hide FAB — hide on conditions where it overlaps the forecast strip
+  const fab = document.getElementById('fab');
+  if(fab) fab.style.display = view === 'conditions' ? 'none' : 'flex';
   // Sync top nav
   document.querySelectorAll('.nav-item').forEach(el => {
     el.classList.toggle('active', el.textContent.trim().toLowerCase() === view);
@@ -3652,7 +3655,12 @@ function dismissInstall() {
 // ── UPDATE DATE ICON ─────────────────────────────────────────────────────────
 (function() {
   const el = document.querySelector('.bottom-nav-item[data-view="forecast"] .bottom-nav-icon');
-  if(el) el.textContent = new Date().getDate();
+  if(el) {
+    const now = new Date();
+    el.textContent = (now.getMonth()+1) + '.' + now.getDate();
+    el.style.fontSize = '11px';
+    el.style.letterSpacing = '-.02em';
+  }
 })();
 function openQuickNote() {
   const overlay = document.getElementById('qn-overlay');
@@ -3746,7 +3754,7 @@ if('serviceWorker' in navigator) {
     <span class="bottom-nav-label">Now</span>
   </button>
   <button class="bottom-nav-item" onclick="setView('forecast')" data-view="forecast">
-    <span class="bottom-nav-icon" style="font-family:'IBM Plex Mono',monospace;font-size:15px;font-weight:500">19</span>
+    <span class="bottom-nav-icon" style="font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:500;letter-spacing:-.02em">4.19</span>
     <span class="bottom-nav-label">Forecast</span>
   </button>
   <button class="bottom-nav-item" onclick="setView('hourly')" data-view="hourly">
