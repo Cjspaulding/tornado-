@@ -200,7 +200,7 @@
     }
     .summary-pill:hover { background:rgba(255,255,255,0.05); }
 
-    .sum-icon { font-size:13px;opacity:.5;filter:grayscale(.4); }
+    .sum-icon { font-size:13px;opacity:.9;filter:grayscale(.1); }
 
     .sum-name {
       font-family:'Cormorant Garamond',serif;font-size:14px;
@@ -279,7 +279,7 @@
 
     .card-head-right { display:flex;flex-direction:column;align-items:flex-end;gap:6px; }
 
-    .card-icon { font-size:28px;opacity:.4;filter:grayscale(.5);display:block;line-height:1; }
+    .card-icon { font-size:28px;opacity:.8;filter:grayscale(.1);display:block;line-height:1; }
 
     .card-cond {
       font-family:'Spectral',serif;font-style:italic;font-size:10.5px;color:var(--ink3);
@@ -361,7 +361,7 @@
 
     .fc-name { font-size:7.5px;color:var(--ink4);text-transform:uppercase;letter-spacing:.1em; }
     .fc-day.today .fc-name { color:var(--navy2);font-weight:500; }
-    .fc-icon { font-size:14px;opacity:.4;filter:grayscale(.5); }
+    .fc-icon { font-size:14px;opacity:.85;filter:grayscale(.1); }
     .fc-hi { font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:400;color:var(--navy);line-height:1; }
     .fc-lo { font-size:9.5px;color:var(--ink4); }
     .fc-rain { font-size:7.5px;color:var(--navy3);letter-spacing:.03em; }
@@ -1111,7 +1111,7 @@ function buildGrid() {
       <div class="card-bar"></div>
       <div class="card-head">
         <div>
-          <div class="station-id">STN-${String(i+1).padStart(3,'0')} · ${(loc.state||'INTL').slice(0,12).toUpperCase()}</div>
+          <div class="station-id">STN-${String(i+1).padStart(3,'0')} · ${stateAbbr(loc.state)}</div>
           <div class="location-name">${loc.name}</div>
           <div class="location-sub" id="meta-${i}">${localTime(loc.tz)}</div>
         </div>
@@ -1734,7 +1734,7 @@ function appendCard(loc, i) {
     <div class="card-bar"></div>
     <div class="card-head">
       <div>
-        <div class="station-id">STN-${String(i+1).padStart(3,'0')} · ${(loc.state||'INTL').slice(0,12).toUpperCase()}</div>
+        <div class="station-id">STN-${String(i+1).padStart(3,'0')} · ${stateAbbr(loc.state)}</div>
         <div class="location-name">${loc.name}</div>
         <div class="location-sub" id="meta-${i}">${localTime(loc.tz)}</div>
       </div>
@@ -1849,7 +1849,7 @@ function renderPressureView() {
       <div class="pv-card" id="pv-${i}" style="animation-delay:${i*80}ms">
         <div class="pv-head">
           <div>
-            <div class="station-id">STN-${String(i+1).padStart(3,'0')} · ${(loc.state||'INTL').slice(0,12).toUpperCase()}</div>
+            <div class="station-id">STN-${String(i+1).padStart(3,'0')} · ${stateAbbr(loc.state)}</div>
             <div class="location-name">${loc.name}</div>
           </div>
           <div class="pv-head-right" id="pv-status-${i}">Loading…</div>
