@@ -1201,6 +1201,47 @@
       border-bottom:1px solid var(--rule);background:var(--ice);
     }
 
+    /* ── BOTTOM NAV (mobile) ──────────────────────────────────────────────── */
+    .bottom-nav { display:none; }
+
+    @media(max-width:600px) {
+      .masthead-nav-strip { display:none; }
+
+      .bottom-nav {
+        display:flex;
+        position:fixed;
+        bottom:0;left:0;right:0;
+        z-index:300;
+        background:var(--navy);
+        border-top:2px solid var(--orange);
+        padding-bottom:env(safe-area-inset-bottom);
+      }
+
+      .bottom-nav-item {
+        flex:1;display:flex;flex-direction:column;align-items:center;
+        justify-content:center;gap:3px;
+        padding:9px 0 8px;
+        cursor:pointer;
+        color:rgba(255,255,255,0.3);
+        transition:color .15s;
+        -webkit-tap-highlight-color:transparent;
+        border:none;background:none;font-family:inherit;
+      }
+      .bottom-nav-item.active .bottom-nav-icon { color:var(--orange2); }
+      .bottom-nav-item.active .bottom-nav-label { color:#fff; }
+
+      .bottom-nav-icon { font-size:19px;line-height:1; }
+      .bottom-nav-label {
+        font-family:'IBM Plex Mono',monospace;
+        font-size:7px;letter-spacing:.1em;text-transform:uppercase;line-height:1;
+        color:rgba(255,255,255,0.3);
+      }
+      .bottom-nav-item.active .bottom-nav-label { color:#fff; }
+
+      body { padding-bottom:calc(60px + env(safe-area-inset-bottom)); }
+      .fab { bottom:calc(72px + env(safe-area-inset-bottom)) !important; }
+    }
+
     /* ── FAB MOBILE SAFE AREA ─────────────────────────────────────────────── */
     .quick-note-sheet {
       padding-bottom:env(safe-area-inset-bottom);
@@ -2069,8 +2110,13 @@ const pressureHistory = {}; // rolling last-6 readings per city for trend
 
 function setView(view) {
   currentView = view;
+  // Sync top nav
   document.querySelectorAll('.nav-item').forEach(el => {
     el.classList.toggle('active', el.textContent.trim().toLowerCase() === view);
+  });
+  // Sync bottom nav
+  document.querySelectorAll('.bottom-nav-item').forEach(el => {
+    el.classList.toggle('active', el.dataset.view === view);
   });
 
   const sl = document.querySelector('.section-label');
@@ -3473,6 +3519,30 @@ if('serviceWorker' in navigator) {
   <button class="install-btn" id="install-btn">Install</button>
   <button class="install-dismiss" onclick="dismissInstall()">✕</button>
 </div>
+
+<!-- BOTTOM NAV (mobile only) -->
+<nav class="bottom-nav" id="bottom-nav">
+  <button class="bottom-nav-item active" onclick="setView('conditions')" data-view="conditions">
+    <span class="bottom-nav-icon">🌡</span>
+    <span class="bottom-nav-label">Now</span>
+  </button>
+  <button class="bottom-nav-item" onclick="setView('forecast')" data-view="forecast">
+    <span class="bottom-nav-icon">📅</span>
+    <span class="bottom-nav-label">Forecast</span>
+  </button>
+  <button class="bottom-nav-item" onclick="setView('hourly')" data-view="hourly">
+    <span class="bottom-nav-icon">🕐</span>
+    <span class="bottom-nav-label">Hourly</span>
+  </button>
+  <button class="bottom-nav-item" onclick="setView('radar')" data-view="radar">
+    <span class="bottom-nav-icon">🛰</span>
+    <span class="bottom-nav-label">Radar</span>
+  </button>
+  <button class="bottom-nav-item" onclick="setView('log')" data-view="log">
+    <span class="bottom-nav-icon">✏️</span>
+    <span class="bottom-nav-label">Log</span>
+  </button>
+</nav>
 
 <!-- QUICK NOTE FAB -->
 <button class="fab" id="fab" onclick="openQuickNote()" title="Quick note">✏</button>
