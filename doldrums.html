@@ -3042,7 +3042,7 @@ function renderLogView() {
 
   const obsCount  = obs.length;
   const noteCount = notes.length;
-  const totalLabel = `${obsCount} observation${obsCount !== 1 ? 's' : ''}${noteCount > 0 ? \` · ${noteCount} note${noteCount !== 1 ? 's' : ''}\` : ''}`;
+  const totalLabel = obsCount + ' observation' + (obsCount !== 1 ? 's' : '') + (noteCount > 0 ? ' · ' + noteCount + ' note' + (noteCount !== 1 ? 's' : '') : '');
 
   let streamHTML = '';
   let obsBuffer  = [];
