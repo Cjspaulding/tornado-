@@ -2363,6 +2363,8 @@ function appendCard(loc, i) {
 }
 
 // ── FORECAST DAY DETAIL ────────────────────────────────────────────────────────
+const _cardBodyCache = {}; // store original card body HTML for instant restore
+
 function fcToggle(el, cardIdx) {
   const strip = document.getElementById('fc-strip-' + cardIdx);
   const body  = document.getElementById('body-' + cardIdx);
@@ -2373,8 +2375,13 @@ function fcToggle(el, cardIdx) {
   // Deactivate all days
   strip.querySelectorAll('.fc-day').forEach(d => d.classList.remove('active'));
 
-  // If same day tapped → go back to today
+  // If same day tapped → restore today instantly
   if(isActive) { fcRestoreToday(cardIdx); return; }
+
+  // Save original body HTML for instant restore if not already saved
+  if(!_cardBodyCache[cardIdx]) {
+    _cardBodyCache[cardIdx] = body.innerHTML;
+  }
 
   el.classList.add('active');
 
@@ -2383,12 +2390,15 @@ function fcToggle(el, cardIdx) {
   const loc = LOCATIONS[cardIdx];
   if(!loc) return;
 
-  // Get hourly data for this day if available
+  // Grab current strip HTML so we can keep it in the detail view
+  const stripHTML = strip.outerHTML;
+
+  // Get hourly data for this day
   const hourly = cachedHourly[cardIdx];
   let hourlyHTML = '';
   if(hourly && d.date) {
     const daySlots = hourly.time
-      .map((t,i) => ({t, temp:hourly.temperature_2m[i], prob:hourly.precipitation_probability[i], code:hourly.weather_code[i]}))
+      .map((t,idx) => ({t, temp:hourly.temperature_2m[idx], prob:hourly.precipitation_probability[idx], code:hourly.weather_code[idx]}))
       .filter(s => s.t.startsWith(d.date));
     if(daySlots.length) {
       hourlyHTML = `
@@ -2418,21 +2428,23 @@ function fcToggle(el, cardIdx) {
     }
   }
 
-  // Replace card body with day detail
   body.innerHTML = `<div class="day-detail">
+    <div class="forecast" style="border-bottom:1px solid var(--rule)">
+      ${stripHTML}
+    </div>
     <div class="day-detail-hero">
-      <button class="day-detail-back" onclick="fcRestoreToday(${cardIdx})">← Today</button>
-      <div style="flex:1;text-align:center">
-        <div class="day-detail-label">${d.day}</div>
-        <div style="display:flex;align-items:center;justify-content:center;gap:12px">
-          <div style="width:38px;height:38px">${el.querySelector('.fc-icon').innerHTML}</div>
-          <div>
-            <div style="font-size:11px;letter-spacing:.08em;color:var(--ink3)">${d.label}</div>
-            <div style="display:flex;align-items:baseline;gap:8px;margin-top:4px">
-              <span style="font-size:36px;font-weight:300;color:var(--navy)">${d.hi}${d.sym}</span>
-              <span style="font-size:14px;color:var(--ink4)">${d.lo}${d.sym}</span>
+      <div style="display:flex;align-items:center;gap:12px;width:100%">
+        <button class="day-detail-back" onclick="fcRestoreToday(${cardIdx})">← Today</button>
+        <div style="flex:1;text-align:center">
+          <div class="day-detail-label">${d.day}</div>
+          <div style="display:flex;align-items:center;justify-content:center;gap:10px;margin-top:4px">
+            <div style="width:34px;height:34px">${el.querySelector('.fc-icon').innerHTML}</div>
+            <div style="display:flex;align-items:baseline;gap:8px">
+              <span style="font-size:34px;font-weight:300;color:var(--navy);font-family:'IBM Plex Mono',monospace">${d.hi}${d.sym}</span>
+              <span style="font-size:13px;color:var(--ink4);font-family:'IBM Plex Mono',monospace">${d.lo}${d.sym}</span>
             </div>
           </div>
+          <div style="font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);margin-top:4px">${d.label}</div>
         </div>
       </div>
     </div>
@@ -2450,17 +2462,25 @@ function fcToggle(el, cardIdx) {
     </div>
     ${hourlyHTML}
   </div>`;
+
+  // Re-activate the tapped day in the newly rendered strip
+  document.getElementById('fc-strip-' + cardIdx)
+    ?.querySelectorAll('.fc-day')
+    .forEach((fc, idx) => { if(fc.dataset.date === d.date) fc.classList.add('active'); });
 }
 
 function fcRestoreToday(cardIdx) {
-  const strip = document.getElementById('fc-strip-' + cardIdx);
-  const loc   = LOCATIONS[cardIdx];
-  if(!loc) return;
-  // Re-fetch and re-render this card
-  strip?.querySelectorAll('.fc-day').forEach(d => d.classList.remove('active'));
-  fetchWeather(loc, cardIdx);
+  const body = document.getElementById('body-' + cardIdx);
+  if(!body) return;
+  if(_cardBodyCache[cardIdx]) {
+    body.innerHTML = _cardBodyCache[cardIdx];
+    _cardBodyCache[cardIdx] = null;
+  } else {
+    // Fallback: re-fetch
+    const loc = LOCATIONS[cardIdx];
+    if(loc) fetchWeather(loc, cardIdx);
+  }
 }
-
 // ── DARK MODE ─────────────────────────────────────────────────────────────────
 function toggleDark() {
   const isDark = document.body.classList.toggle('dark');
