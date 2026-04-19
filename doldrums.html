@@ -45,9 +45,9 @@
       --navy3:      #254f8f;
       --navy-pale:  #dce8f5;
       --navy-dim:   rgba(11,37,69,0.06);
-      --ice:        #f0f4f9;
-      --ice2:       #e8eef6;
-      --white:      #ffffff;
+      --ice:        #f2f0eb;
+      --ice2:       #ebe8e1;
+      --white:      #faf8f5;
       --orange:     #c84b11;
       --orange2:    #e05c1a;
       --orange-dim: rgba(200,75,17,0.08);
@@ -1251,6 +1251,41 @@
       border-bottom:1px solid var(--rule);background:var(--ice);
     }
 
+    /* ── VIEW TRANSITIONS ─────────────────────────────────────────────────── */
+    .view-enter {
+      animation: viewIn .2s cubic-bezier(.22,1,.36,1) both;
+    }
+    @keyframes viewIn {
+      from { opacity:0; transform:translateY(6px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+
+    /* ── BACK BUTTON ──────────────────────────────────────────────────────── */
+    .global-back {
+      display:none;
+      position:fixed;top:0;left:0;right:0;z-index:250;
+      background:var(--navy);
+      border-bottom:2px solid var(--orange);
+      padding:10px 16px;
+      align-items:center;gap:10px;
+      animation: slideDown .22s cubic-bezier(.22,1,.36,1);
+    }
+    @keyframes slideDown {
+      from { transform:translateY(-100%); }
+      to   { transform:translateY(0); }
+    }
+    .global-back.visible { display:flex; }
+    .global-back-btn {
+      background:none;border:none;color:rgba(255,255,255,0.8);
+      font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.14em;
+      text-transform:uppercase;cursor:pointer;display:flex;align-items:center;gap:8px;
+      padding:4px 0;-webkit-tap-highlight-color:transparent;
+    }
+    .global-back-label {
+      font-size:9px;color:rgba(255,255,255,0.35);letter-spacing:.12em;text-transform:uppercase;
+      margin-left:auto;
+    }
+
     /* ── ADD CITY BOTTOM SHEET (mobile) ──────────────────────────────────── */
     @media(max-width:600px) {
       /* Hide the centered modal on mobile */
@@ -2034,6 +2069,7 @@ async function refreshAll(){
   if(u)u.textContent=`Obs. ${now}`;
   if(btn)btn.disabled=false;
   if(icon){icon.classList.remove('spin');icon.textContent='↺';}
+  haptic('medium');
   startCountdown();
 }
 
@@ -2273,8 +2309,50 @@ const cachedPressure = {};  // hourly pressure per location index
 const cachedHourly   = {}; // hourly forecast per location index
 const pressureHistory = {}; // rolling last-6 readings per city for trend
 
-function setView(view) {
+// ── HAPTICS ───────────────────────────────────────────────────────────────────
+function haptic(style) {
+  if(!navigator.vibrate) return;
+  const patterns = { light:10, medium:20, heavy:35, success:[10,40,10] };
+  navigator.vibrate(patterns[style] || 10);
+}
+
+// ── NAVIGATION HISTORY ────────────────────────────────────────────────────────
+const _navHistory = [];
+const _viewLabels = {
+  conditions:'Now', forecast:'Forecast', hourly:'Hourly',
+  radar:'Radar', alerts:'Alerts', log:'Log'
+};
+
+function goBack() {
+  haptic('light');
+  if(_navHistory.length > 1) {
+    _navHistory.pop();
+    setView(_navHistory[_navHistory.length - 1], true);
+  }
+}
+
+function updateBackButton() {
+  const back = document.getElementById('global-back');
+  const label = document.getElementById('global-back-label');
+  if(!back) return;
+  if(_navHistory.length > 1 && window.innerWidth <= 600) {
+    const prevView = _navHistory[_navHistory.length - 2];
+    if(label) label.textContent = _viewLabels[prevView] || '';
+    back.classList.add('visible');
+  } else {
+    back.classList.remove('visible');
+  }
+}
+
+function setView(view, isBack) {
   currentView = view;
+  if(!isBack) {
+    if(_navHistory[_navHistory.length-1] !== view) {
+      _navHistory.push(view);
+      if(_navHistory.length > 10) _navHistory.shift();
+    }
+  }
+  haptic('light');
   // Sync top nav
   document.querySelectorAll('.nav-item').forEach(el => {
     el.classList.toggle('active', el.textContent.trim().toLowerCase() === view);
@@ -2283,6 +2361,7 @@ function setView(view) {
   document.querySelectorAll('.bottom-nav-item').forEach(el => {
     el.classList.toggle('active', el.dataset.view === view);
   });
+  updateBackButton();
 
   const sl = document.querySelector('.section-label');
   const main = document.querySelector('main');
@@ -2305,12 +2384,14 @@ function setView(view) {
     case 'pressure': renderPressureView(); break;
     case 'alerts':   renderAlertsView();   break;
     case 'log':      renderLogView();      break;
-    default: // conditions
+    default:
       if(!document.getElementById('weather-grid')) {
         main.innerHTML = '<div class="grid" id="weather-grid"></div>';
       }
       refreshAll();
   }
+  // Animate main content in
+  if(main) { main.classList.remove('view-enter'); void main.offsetWidth; main.classList.add('view-enter'); }
 }
 
 function renderForecastView() {
@@ -2628,6 +2709,7 @@ function appendCard(loc, i) {
 const _cardBodyCache = {}; // store original card body HTML for instant restore
 
 function fcToggle(el, cardIdx) {
+  haptic('light');
   const strip = document.getElementById('fc-strip-' + cardIdx);
   const body  = document.getElementById('body-' + cardIdx);
   if(!strip || !body) return;
@@ -3489,6 +3571,7 @@ function addNote() {
   if(!ta) return;
   const text = ta.value.trim();
   if(!text) return;
+  haptic('success');
   const notes = getNotes();
   notes.push({ ts: Date.now(), text, type: 'note' });
   saveNotes(notes);
@@ -3697,6 +3780,7 @@ function saveQuickNote() {
   const ta = document.getElementById('qn-ta');
   const text = ta?.value.trim();
   if(!text) return;
+  haptic('success');
   const notes = getNotes();
   notes.push({ ts: Date.now(), text, type:'note' });
   saveNotes(notes);
@@ -3786,6 +3870,12 @@ document.addEventListener('DOMContentLoaded', () => {
   </div>
   <button class="install-btn" id="install-btn">Install</button>
   <button class="install-dismiss" onclick="dismissInstall()">✕</button>
+</div>
+
+<!-- GLOBAL BACK BUTTON -->
+<div class="global-back" id="global-back">
+  <button class="global-back-btn" onclick="goBack()">← Back</button>
+  <div class="global-back-label" id="global-back-label"></div>
 </div>
 
 <!-- BOTTOM NAV (mobile only) -->
