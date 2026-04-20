@@ -1,68 +1,65 @@
-// Doldrums — Service Worker
-// Strategy: cache-first for the app shell, network-first for weather API calls
-
-const CACHE = 'doldrums-v3';
-const SHELL = [
-  '/',
-  '/doldrums.html',
-  'https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=IBM+Plex+Mono:wght@300;400;500&family=Spectral:ital,wght@1,300;1,400&display=swap',
+const CACHE_NAME = 'doldrums-v4';
+const STATIC_ASSETS = [
+  '/icon-512.png',
+  '/icon-180.png',
+  '/icon-167.png',
+  '/icon-152.png',
+  '/icon.svg',
+  '/og-image.png'
 ];
 
-// Install — cache the app shell
-self.addEventListener('install', e => {
-  e.waitUntil(
-    caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting())
+// Install: cache only static assets (not HTML)
+self.addEventListener('install', event => {
+  self.skipWaiting();
+  event.waitUntil(
+    caches.open(CACHE_NAME).then(cache => cache.addAll(STATIC_ASSETS))
   );
 });
 
-// Activate — clear old caches
-self.addEventListener('activate', e => {
-  e.waitUntil(
+// Activate: delete ALL old caches immediately
+self.addEventListener('activate', event => {
+  event.waitUntil(
     caches.keys().then(keys =>
-      Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
+      Promise.all(
+        keys
+          .filter(key => key !== CACHE_NAME)
+          .map(key => {
+            console.log('[SW] Deleting old cache:', key);
+            return caches.delete(key);
+          })
+      )
     ).then(() => self.clients.claim())
   );
 });
 
-// Fetch strategy:
-// - Weather API / radar tiles → network first, fallback to cache
-// - Everything else → cache first, fallback to network
-self.addEventListener('fetch', e => {
-  const url = e.request.url;
+// Fetch: network-first for HTML/navigation, cache-first for static
+self.addEventListener('fetch', event => {
+  const { request } = event;
+  const url = new URL(request.url);
 
-  // Always go network-first for live data
-  const isLiveData = url.includes('api.open-meteo.com')
-    || url.includes('api.rainviewer.com')
-    || url.includes('rainviewer.com')
-    || url.includes('nominatim.openstreetmap.org')
-    || url.includes('geocoding-api.open-meteo.com');
+  // External requests (APIs, fonts) — always network, no caching
+  if (url.origin !== location.origin) {
+    return; // let browser handle it normally
+  }
 
-  if(isLiveData) {
-    e.respondWith(
-      fetch(e.request)
-        .then(res => {
-          // Cache a copy of successful responses
-          if(res.ok) {
-            const clone = res.clone();
-            caches.open(CACHE).then(c => c.put(e.request, clone));
-          }
-          return res;
-        })
-        .catch(() => caches.match(e.request))
+  // HTML / navigation requests — ALWAYS network-first, never serve from cache
+  if (request.mode === 'navigate' || request.headers.get('Accept')?.includes('text/html')) {
+    event.respondWith(
+      fetch(request, { cache: 'no-store' })
+        .catch(() => caches.match('/doldrums.html')) // fallback if offline
     );
     return;
   }
 
-  // Cache-first for app shell and static assets
-  e.respondWith(
-    caches.match(e.request).then(cached => {
-      if(cached) return cached;
-      return fetch(e.request).then(res => {
-        if(res.ok) {
-          const clone = res.clone();
-          caches.open(CACHE).then(c => c.put(e.request, clone));
+  // Static assets (icons, images) — cache-first
+  event.respondWith(
+    caches.match(request).then(cached => {
+      if (cached) return cached;
+      return fetch(request).then(response => {
+        if (response.ok) {
+          caches.open(CACHE_NAME).then(cache => cache.put(request, response.clone()));
         }
-        return res;
+        return response;
       });
     })
   );
