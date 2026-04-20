@@ -1310,13 +1310,61 @@
       font-size:11px;color:var(--ink4);letter-spacing:.04em;
       font-style:italic;
     }
+    .view-enter-right {
+      animation: viewInRight .28s cubic-bezier(.22,1,.36,1) both;
+    }
+    .view-enter-left {
+      animation: viewInLeft .28s cubic-bezier(.22,1,.36,1) both;
+    }
+    /* fallback for non-directional */
     .view-enter {
-      animation: viewIn .2s cubic-bezier(.22,1,.36,1) both;
+      animation: viewInRight .28s cubic-bezier(.22,1,.36,1) both;
     }
-    @keyframes viewIn {
-      from { opacity:0; transform:translateY(6px); }
-      to   { opacity:1; transform:translateY(0); }
+    @keyframes viewInRight {
+      from { opacity:0; transform:translateX(32px); }
+      to   { opacity:1; transform:translateX(0); }
     }
+    @keyframes viewInLeft {
+      from { opacity:0; transform:translateX(-32px); }
+      to   { opacity:1; transform:translateX(0); }
+    }
+
+    /* ── PULL TO REFRESH ─────────────────────────────────────────────────── */
+    #ptr-indicator {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 500;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      height: 0;
+      overflow: hidden;
+      background: var(--orange);
+      color: #fff;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 9px;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      transition: height .2s cubic-bezier(.22,1,.36,1);
+      will-change: height;
+    }
+    #ptr-indicator.pulling { height: 48px; }
+    #ptr-indicator.releasing { height: 48px; background: var(--navy2); }
+    #ptr-indicator.refreshing { height: 48px; }
+    .ptr-spinner {
+      width: 14px; height: 14px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    .ptr-arrow {
+      font-size: 16px;
+      display: inline-block;
+      transition: transform .2s;
+    }
+    .releasing .ptr-arrow { transform: rotate(180deg); }
 
     /* ── BACK BUTTON ──────────────────────────────────────────────────────── */
     .global-back {
@@ -2640,8 +2688,7 @@ function setView(view, isBack) {
       }
       refreshAll();
   }
-  // Animate main content in
-  if(main) { main.classList.remove('view-enter'); void main.offsetWidth; main.classList.add('view-enter'); }
+  // Animation handled by setView wrapper (directional slides)
 }
 
 function renderForecastView() {
@@ -4296,5 +4343,127 @@ document.addEventListener('DOMContentLoaded', () => {
   </div>
 </div>
 
+<!-- Pull to refresh indicator -->
+<div id="ptr-indicator">
+  <span class="ptr-arrow" id="ptr-arrow">↓</span>
+  <span id="ptr-label">Pull to refresh</span>
+</div>
+
+<script>
+// ── TAB ORDER for directional transitions ─────────────────────────────────────
+const TAB_ORDER = ['conditions','forecast','hourly','radar','alerts','log'];
+let _lastViewIdx = 0;
+
+// Patch setView to add directional slide
+const _origSetView = setView;
+window.setView = function(view, isBack) {
+  const newIdx = TAB_ORDER.indexOf(view);
+  const oldIdx = _lastViewIdx;
+  _lastViewIdx = newIdx < 0 ? oldIdx : newIdx;
+
+  // Call original to do the work
+  _origSetView(view, isBack);
+
+  // Apply directional class after render
+  const main = document.querySelector('main');
+  if(main) {
+    main.classList.remove('view-enter','view-enter-right','view-enter-left');
+    void main.offsetWidth;
+    const goingRight = isBack ? false : (newIdx >= oldIdx);
+    main.classList.add(goingRight ? 'view-enter-right' : 'view-enter-left');
+  }
+};
+
+// ── PULL TO REFRESH ───────────────────────────────────────────────────────────
+(function() {
+  const PTR_THRESHOLD = 72; // px to pull before triggering
+  let startY = 0, currentY = 0, pulling = false, triggered = false;
+  const indicator = document.getElementById('ptr-indicator');
+  const arrow = document.getElementById('ptr-arrow');
+  const label = document.getElementById('ptr-label');
+
+  function getScrollTop() {
+    return document.documentElement.scrollTop || document.body.scrollTop || 0;
+  }
+
+  document.addEventListener('touchstart', e => {
+    if(getScrollTop() > 0) return;
+    startY = e.touches[0].clientY;
+    pulling = false;
+    triggered = false;
+  }, { passive: true });
+
+  document.addEventListener('touchmove', e => {
+    if(triggered) return;
+    currentY = e.touches[0].clientY;
+    const dist = currentY - startY;
+    if(dist < 8 || getScrollTop() > 0) return;
+
+    pulling = true;
+    const pct = Math.min(dist / PTR_THRESHOLD, 1);
+    indicator.className = dist >= PTR_THRESHOLD ? 'releasing' : 'pulling';
+    label.textContent = dist >= PTR_THRESHOLD ? 'Release to refresh' : 'Pull to refresh';
+  }, { passive: true });
+
+  document.addEventListener('touchend', () => {
+    if(!pulling) return;
+    const dist = currentY - startY;
+    pulling = false;
+
+    if(dist >= PTR_THRESHOLD && !triggered) {
+      triggered = true;
+      indicator.className = 'refreshing';
+      label.textContent = 'Refreshing…';
+      arrow.style.display = 'none';
+      const spinner = document.createElement('span');
+      spinner.className = 'ptr-spinner';
+      indicator.insertBefore(spinner, label);
+      haptic('medium');
+
+      refreshAll().finally(() => {
+        setTimeout(() => {
+          indicator.className = '';
+          indicator.innerHTML = '<span class="ptr-arrow" id="ptr-arrow">↓</span><span id="ptr-label">Pull to refresh</span>';
+        }, 400);
+      });
+    } else {
+      indicator.className = '';
+    }
+  });
+})();
+
+// ── SWIPE BETWEEN TABS ────────────────────────────────────────────────────────
+(function() {
+  let sx = 0, sy = 0, locked = false;
+
+  document.addEventListener('touchstart', e => {
+    sx = e.touches[0].clientX;
+    sy = e.touches[0].clientY;
+    locked = false;
+  }, { passive: true });
+
+  document.addEventListener('touchend', e => {
+    if(locked) return;
+    const dx = e.changedTouches[0].clientX - sx;
+    const dy = e.changedTouches[0].clientY - sy;
+    // Only trigger on clear horizontal swipe (not vertical scroll)
+    if(Math.abs(dx) < 50 || Math.abs(dy) > Math.abs(dx) * 0.6) return;
+
+    const views = TAB_ORDER;
+    const cur = views.indexOf(currentView);
+    if(cur < 0) return;
+
+    if(dx < 0 && cur < views.length - 1) {
+      // Swipe left → go to next tab
+      haptic('light');
+      setView(views[cur + 1]);
+    } else if(dx > 0 && cur > 0) {
+      // Swipe right → go to previous tab
+      haptic('light');
+      setView(views[cur - 1], true);
+    }
+  });
+})();
+</script>
 </body>
 </html>
