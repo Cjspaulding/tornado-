@@ -605,7 +605,7 @@
 
       /* Main */
       main { padding:0 10px 28px; }
-      .grid { gap:10px; }
+      .grid { gap:0; }
 
       /* Card */
       .card-head { padding:12px 14px 10px; }
@@ -1429,6 +1429,26 @@
 
     @media(min-width:601px) {
       .city-sheet-overlay, .city-sheet { display:none !important; }
+
+      /* ── NATIVE APP FEEL (mobile) ──────────────────────────────────────── */
+      /* Cards bleed full width, no borders, no shadows */
+      .card {
+        border-left:none !important;
+        border-right:none !important;
+        box-shadow:none !important;
+        border-radius:0 !important;
+      }
+      .card:hover { transform:none !important; box-shadow:none !important; }
+      /* Hide card-bar — greeting replaces it */
+      .card-bar { display:none; }
+      /* Hide section label — greeting replaces it */
+      .section-label { display:none; }
+      /* Primary card head hidden — greeting has the info */
+      .card:first-child .card-head { display:none; }
+      /* Remove grid gap on mobile */
+      #weather-grid { gap:0 !important; }
+      /* Card head for secondary cities — tighter */
+      .card-head { padding:10px 16px 8px; }
     }
     .bottom-nav { display:none; }
 
@@ -1886,10 +1906,14 @@ function buildGreeting(loc, i, data) {
   const condStr = w ? w.label : '';
   const tempStr = c ? `${Math.round(c.temperature_2m)}${loc.sym}` : '';
   const sub = [condStr, tempStr].filter(Boolean).join(' · ');
-  return `<div class="greeting-wrap">
-    <div class="greeting-line">${greeting}</div>
-    <div class="greeting-city">${loc.name}</div>
-    ${sub ? `<div class="greeting-sub">${sub}</div>` : ''}
+  const iconHTML = w ? `<div style="width:44px;height:44px;flex-shrink:0">${w.icon}</div>` : '';
+  return `<div class="greeting-wrap" style="display:flex;align-items:flex-start;justify-content:space-between">
+    <div>
+      <div class="greeting-line">${greeting}</div>
+      <div class="greeting-city">${loc.name}</div>
+      ${sub ? `<div class="greeting-sub">${sub}</div>` : ''}
+    </div>
+    ${iconHTML}
   </div>`;
 }
 
