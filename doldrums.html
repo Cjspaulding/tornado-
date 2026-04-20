@@ -1255,6 +1255,25 @@
       border-bottom:1px solid var(--rule);background:var(--ice);
     }
 
+    /* ── GREETING ─────────────────────────────────────────────────────────── */
+    .greeting-wrap {
+      padding:16px 18px 12px;
+      border-bottom:1px solid var(--rule);
+    }
+    .greeting-line {
+      font-size:10px;letter-spacing:.2em;text-transform:uppercase;
+      color:var(--orange2);margin-bottom:6px;
+    }
+    .greeting-city {
+      font-size:32px;font-weight:300;color:var(--ink);
+      font-family:'Cormorant Garamond',serif;letter-spacing:.02em;
+      line-height:1;
+    }
+    .greeting-sub {
+      font-size:8px;color:var(--ink4);letter-spacing:.14em;text-transform:uppercase;
+      margin-top:6px;
+    }
+
     /* ── RAIN ANSWER ──────────────────────────────────────────────────────── */
     .rain-answer {
       padding:14px 18px;
@@ -1849,6 +1868,31 @@ function buildRainAnswer(hourly, loc) {
   </div>`;
 }
 
+// ── GREETING ──────────────────────────────────────────────────────────────────
+function getGreeting(tz) {
+  const now = new Date();
+  const hour = parseInt(new Date(now.toLocaleString('en-US', { timeZone: tz })).getHours());
+  if(hour >= 5  && hour < 12) return 'Good morning';
+  if(hour >= 12 && hour < 17) return 'Good afternoon';
+  if(hour >= 17 && hour < 21) return 'Good evening';
+  return 'Good night';
+}
+
+function buildGreeting(loc, i, data) {
+  if(i !== 0) return ''; // only show on primary city
+  const greeting = getGreeting(loc.tz);
+  const c = data?.current;
+  const w = c ? wmo(c.weather_code) : null;
+  const condStr = w ? w.label : '';
+  const tempStr = c ? `${Math.round(c.temperature_2m)}${loc.sym}` : '';
+  const sub = [condStr, tempStr].filter(Boolean).join(' · ');
+  return `<div class="greeting-wrap">
+    <div class="greeting-line">${greeting}</div>
+    <div class="greeting-city">${loc.name}</div>
+    ${sub ? `<div class="greeting-sub">${sub}</div>` : ''}
+  </div>`;
+}
+
 // ── HELPERS ───────────────────────────────────────────────────────────────────
 
 // ── STATE ABBREVIATION ────────────────────────────────────────────────────────
@@ -1969,9 +2013,9 @@ function buildGrid() {
       <div class="card-bar"></div>
       <div class="card-head">
         <div>
-          <div class="station-id">STN-${String(i+1).padStart(3,'0')} · ${stateAbbr(loc.state)}</div>
-          <div class="location-name">${loc.name}</div>
-          <div class="location-sub" id="meta-${i}">${localTime(loc.tz)}</div>
+          <div class="station-id">${i === 0 ? '' : `STN-${String(i+1).padStart(3,'0')} · ${stateAbbr(loc.state)}`}</div>
+          <div class="location-name">${i === 0 ? '' : loc.name}</div>
+          <div class="location-sub" id="meta-${i}">${i === 0 ? '' : localTime(loc.tz)}</div>
         </div>
         <div class="card-head-right">
           <div class="card-icon" id="icon-${i}">—</div>
@@ -2069,6 +2113,7 @@ function renderCard(i, loc, data) {
   if(!body)return;
 
   body.innerHTML=`
+    ${buildGreeting(loc, i, data)}
     <div class="temp-hero">
       <div class="temp-numeral">${Math.round(c.temperature_2m)}</div>
       <div class="temp-degree">${loc.sym}</div>
