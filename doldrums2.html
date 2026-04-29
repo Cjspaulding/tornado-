@@ -67,13 +67,14 @@
       --shadow-lg:  0 4px 32px rgba(11,37,69,0.14), 0 1px 4px rgba(11,37,69,0.08);
     }
 
-    html, body {
+    html {
       height: 100%;
       overflow: hidden;
-      overscroll-behavior: none;
     }
-    html { height: 100%; }
-    body { height: 100%; overflow: hidden; }
+    body {
+      height: 100%;
+      overflow: hidden;
+    }
 
     /* ── NATIVE APP GLOBALS ─────────────────────────────────────────────────── */
     html, body {
@@ -303,10 +304,9 @@
       position: fixed;
       top: calc(44px + env(safe-area-inset-top));
       left: 0; right: 0;
-      bottom: calc(70px + env(safe-area-inset-bottom));
+      bottom: calc(80px + env(safe-area-inset-bottom));
       overflow-y: scroll;
       -webkit-overflow-scrolling: touch;
-      z-index: 9;
       padding: 0 0 20px;
     }
 
@@ -615,8 +615,9 @@
       padding:12px 20px;display:flex;align-items:center;
       justify-content:space-between;gap:12px;
       transform:translateY(100%);transition:transform .3s cubic-bezier(.22,1,.36,1);
+      pointer-events:none;
     }
-    .share-strip.open { transform:translateY(0); }
+    .share-strip.open { transform:translateY(0); pointer-events:all; }
     .share-url {
       font-size:10px;color:rgba(255,255,255,0.6);
       letter-spacing:.06em;overflow:hidden;text-overflow:ellipsis;
@@ -1470,8 +1471,9 @@
         padding-bottom:env(safe-area-inset-bottom);
         max-height:85vh;
         display:flex;flex-direction:column;
+        pointer-events:none;
       }
-      .city-sheet.open { transform:translateY(0); }
+      .city-sheet.open { transform:translateY(0); pointer-events:all; }
 
       .city-sheet-head {
         background:rgba(255,255,255,0.04);padding:16px 20px;
@@ -1890,6 +1892,7 @@
         touch-action: manipulation;
         user-select: none;
         -webkit-user-select: none;
+        -webkit-touch-callout: none;
       }
       .bottom-nav-item.active .bottom-nav-icon { color:var(--orange2); }
       .bottom-nav-item.active .bottom-nav-label { color:#fff; }
@@ -1949,8 +1952,9 @@
       position:fixed;bottom:0;left:0;right:0;z-index:501;
       max-height:80vh;display:flex;flex-direction:column;
       padding-bottom:env(safe-area-inset-bottom);
+      pointer-events:none;
     }
-    .quick-note-sheet.open { transform:translateY(0); }
+    .quick-note-sheet.open { transform:translateY(0); pointer-events:all; }
 
     /* Header */
     .quick-note-head {
@@ -3062,7 +3066,7 @@ function goBack() {
 
 // Top-level nav — resets history so back button never shows
 function navTo(view) {
-  _navHistory = [view];
+  _navHistory.splice(0, _navHistory.length, view);
   setView(view);
 }
 
@@ -3850,7 +3854,7 @@ let _radarInitDone = false;
 async function renderRadarView() {
   const main = document.querySelector('main');
 
-  main.innerHTML = `<div class="radar-view">
+  main.innerHTML = `<div class="radar-view" style="touch-action:none;">
     <div id="radar-map"></div>
     <div class="radar-controls">
       <button class="radar-play-btn" id="radar-play-btn" onclick="radarTogglePlay()" title="Play/Pause">▶</button>
@@ -4731,15 +4735,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
 <!-- BOTTOM NAV (mobile only) -->
 <nav class="bottom-nav" id="bottom-nav">
-  <button class="bottom-nav-item active" onclick="navTo('conditions')" data-view="conditions">
+  <button class="bottom-nav-item active" data-view="conditions" onclick="navTo('conditions')">
     <span class="bottom-nav-icon">◎</span>
     <span class="bottom-nav-label">Now</span>
   </button>
-  <button class="bottom-nav-item" onclick="navTo('radar')" data-view="radar">
+  <button class="bottom-nav-item" data-view="radar" onclick="navTo('radar')">
     <span class="bottom-nav-icon" style="font-size:20px">◈</span>
     <span class="bottom-nav-label">Radar</span>
   </button>
-  <button class="bottom-nav-item" onclick="navTo('log')" data-view="log">
+  <button class="bottom-nav-item" data-view="log" onclick="navTo('log')">
     <span class="bottom-nav-icon" style="font-size:22px;letter-spacing:-1px">≡</span>
     <span class="bottom-nav-label">Log</span>
   </button>
@@ -4808,11 +4812,70 @@ document.addEventListener('DOMContentLoaded', () => {
 </div>
 
 <script>
-// PTR disabled — hiding indicator
-document.addEventListener('DOMContentLoaded', () => {
-  const ind = document.getElementById('ptr-indicator');
-  if(ind) ind.style.display = 'none';
-});
+// ── BOTTOM NAV TOUCH LISTENERS ───────────────────────────────────────────────
+(function() {
+  function attachNav() {
+    const nav = document.getElementById('bottom-nav');
+    if(!nav) { setTimeout(attachNav, 100); return; }
+
+    nav.addEventListener('pointerup', function(e) {
+      const btn = e.target.closest('[data-view]');
+      if(!btn) return;
+      navTo(btn.dataset.view);
+    });
+
+    nav.addEventListener('touchend', function(e) {
+      const btn = e.target.closest('[data-view]');
+      if(!btn) return;
+      e.preventDefault();
+      navTo(btn.dataset.view);
+    }, { passive: false });
+
+    nav.addEventListener('click', function(e) {
+      const btn = e.target.closest('[data-view]');
+      if(!btn) return;
+      navTo(btn.dataset.view);
+    });
+  }
+  attachNav();
+
+  // ── COORDINATE-BASED NAV FALLBACK ─────────────────────────────────────────
+  // Bypasses DOM event system entirely — uses raw touch position
+  window.addEventListener('touchend', function(e) {
+    // Ignore multi-touch (pinch/zoom)
+    if(e.touches.length > 0) return;
+
+    const touch = e.changedTouches[0];
+    const y = touch.clientY;
+    const x = touch.clientX;
+    const h = window.innerHeight;
+    const w = window.innerWidth;
+    const navH = 65;
+
+    if(y < h - navH) return;
+
+    if(x < w / 3) {
+      navTo('conditions');
+    } else if(x < (2 * w) / 3) {
+      navTo('radar');
+    } else {
+      navTo('log');
+    }
+    e.preventDefault();
+  }, { passive: false });
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const ind = document.getElementById('ptr-indicator');
+    if(ind) ind.style.display = 'none';
+  });
+})();
 </script>
+
+<!-- NAV TOUCH CATCHER - highest z-index, transparent, catches all nav touches -->
+<div id="nav-touch-catcher" style="position:fixed;bottom:0;left:0;right:0;height:80px;z-index:99999;background:transparent;display:flex;">
+  <div style="flex:1;height:100%;" ontouchend="event.preventDefault();navTo('conditions')" onclick="navTo('conditions')"></div>
+  <div style="flex:1;height:100%;" ontouchend="event.preventDefault();navTo('radar')" onclick="navTo('radar')"></div>
+  <div style="flex:1;height:100%;" ontouchend="event.preventDefault();navTo('log')" onclick="navTo('log')"></div>
+</div>
 </body>
 </html>
