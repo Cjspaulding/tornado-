@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Doldrums — Support</title>
+  <link rel="icon" type="image/png" href="/icon-512.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+    :root {
+      --navy: #0b2545;
+      --orange: #c84b11;
+      --ice: #f2f0eb;
+      --ink: #0b1929;
+      --ink3: #5a7080;
+      --rule: #c8d8e8;
+    }
+    body {
+      font-family: 'IBM Plex Mono', monospace;
+      background: var(--ice);
+      color: var(--ink);
+      min-height: 100vh;
+    }
+    header {
+      background: var(--navy);
+      border-bottom: 4px solid var(--orange);
+      padding: 20px 32px;
+      display: flex;
+      align-items: baseline;
+      gap: 16px;
+    }
+    .brand {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 36px;
+      font-weight: 300;
+      color: #fff;
+      letter-spacing: .06em;
+    }
+    .brand-tag {
+      font-size: 9px;
+      letter-spacing: .22em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.35);
+    }
+    .container {
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 48px 32px 80px;
+    }
+    h1 {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      letter-spacing: .28em;
+      text-transform: uppercase;
+      color: var(--orange);
+      margin-bottom: 32px;
+    }
+    h2 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 22px;
+      font-weight: 300;
+      color: var(--navy);
+      margin: 36px 0 10px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--rule);
+    }
+    p {
+      font-size: 13px;
+      line-height: 1.8;
+      color: var(--ink3);
+      margin-bottom: 12px;
+    }
+    .contact-block {
+      background: #fff;
+      border: 1px solid var(--rule);
+      padding: 24px 28px;
+      margin-top: 40px;
+    }
+    .contact-label {
+      font-size: 9px;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+      color: var(--orange);
+      margin-bottom: 8px;
+    }
+    .contact-email {
+      font-size: 16px;
+      color: var(--navy);
+    }
+    .contact-email a {
+      color: var(--navy);
+      text-decoration: none;
+      border-bottom: 1px solid var(--rule);
+    }
+    .contact-email a:hover {
+      border-color: var(--navy);
+    }
+    .contact-note {
+      font-size: 10px;
+      color: var(--ink3);
+      margin-top: 6px;
+      letter-spacing: .04em;
+    }
+    footer {
+      background: var(--navy);
+      border-top: 4px solid var(--orange);
+      padding: 16px 32px;
+      font-size: 9px;
+      letter-spacing: .14em;
+      color: rgba(255,255,255,0.3);
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    footer a { color: inherit; text-decoration: none; }
+    footer a:hover { color: rgba(255,255,255,0.6); }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="brand">doldrums</div>
+  <div class="brand-tag">Support</div>
+</header>
+
+<div class="container">
+  <h1>Support &amp; Help</h1>
+
+  <h2>Frequently Asked Questions</h2>
+
+  <p><strong>How do I add a city?</strong><br>
+  Tap the <em>+</em> button in the top bar or the "Add City" button on the main screen. You can search by city name or use your current location.</p>
+
+  <p><strong>How do I remove a city?</strong><br>
+  Tap the small ✕ button in the top-right corner of any city card to remove it.</p>
+
+  <p><strong>Why isn't my location updating?</strong><br>
+  Doldrums refreshes weather data automatically every 10 minutes. You can force a refresh at any time by tapping the Refresh button. Make sure location permissions are enabled in your device Settings → Privacy → Location Services → Doldrums.</p>
+
+  <p><strong>Where does the weather data come from?</strong><br>
+  Doldrums uses <a href="https://open-meteo.com" target="_blank" style="color:var(--navy)">Open-Meteo</a>, a free open-source weather API powered by national weather services including NOAA/NWS. City name lookups use OpenStreetMap Nominatim.</p>
+
+  <p><strong>Is my data shared or stored?</strong><br>
+  No. Your saved cities and weather journal entries are stored locally on your device only and are never transmitted to any server. See our <a href="/privacy" style="color:var(--navy)">Privacy Policy</a> for full details.</p>
+
+  <p><strong>Does Doldrums require an account?</strong><br>
+  No account required. Doldrums works entirely on-device with no sign-up.</p>
+
+  <p><strong>The radar isn't loading — what should I do?</strong><br>
+  The radar requires an internet connection and uses RainViewer data. Try refreshing or checking your connection. Radar may occasionally be unavailable during RainViewer outages.</p>
+
+  <p><strong>How do I use the weather journal?</strong><br>
+  Tap the pencil icon (✏) in the bottom-right corner to log a quick observation. Select a mood, add an optional note, and tap "Log it."</p>
+
+  <h2>Contact</h2>
+  <p>For bug reports, feature requests, or any other questions, reach out directly:</p>
+
+  <div class="contact-block">
+    <div class="contact-label">Email</div>
+    <div class="contact-email"><a href="mailto:support@doldrums.app">support@doldrums.app</a></div>
+    <div class="contact-note">We typically respond within 1–2 business days.</div>
+  </div>
+
+</div>
+
+<footer>
+  <span>Doldrums</span>
+  <span>·</span>
+  <a href="/">doldrums.app</a>
+  <span>·</span>
+  <a href="/privacy">Privacy Policy</a>
+</footer>
+
+</body>
+</html>

@@ -67,13 +67,14 @@
       --shadow-lg:  0 4px 32px rgba(11,37,69,0.14), 0 1px 4px rgba(11,37,69,0.08);
     }
 
-    html, body {
+    html {
       height: 100%;
       overflow: hidden;
-      overscroll-behavior: none;
     }
-    html { height: 100%; }
-    body { height: 100%; overflow: hidden; }
+    body {
+      height: 100%;
+      overflow: hidden;
+    }
 
     /* ── NATIVE APP GLOBALS ─────────────────────────────────────────────────── */
     html, body {
@@ -303,10 +304,9 @@
       position: fixed;
       top: calc(44px + env(safe-area-inset-top));
       left: 0; right: 0;
-      bottom: calc(60px + env(safe-area-inset-bottom));
+      bottom: calc(80px + env(safe-area-inset-bottom));
       overflow-y: scroll;
       -webkit-overflow-scrolling: touch;
-      z-index: 9;
       padding: 0 0 20px;
     }
 
@@ -615,8 +615,9 @@
       padding:12px 20px;display:flex;align-items:center;
       justify-content:space-between;gap:12px;
       transform:translateY(100%);transition:transform .3s cubic-bezier(.22,1,.36,1);
+      pointer-events:none;
     }
-    .share-strip.open { transform:translateY(0); }
+    .share-strip.open { transform:translateY(0); pointer-events:all; }
     .share-url {
       font-size:10px;color:rgba(255,255,255,0.6);
       letter-spacing:.06em;overflow:hidden;text-overflow:ellipsis;
@@ -1455,35 +1456,37 @@
 
       .city-sheet-overlay {
         position:fixed;inset:0;z-index:1000;
-        background:rgba(11,25,41,0.5);
-        backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
+        background:rgba(4,10,20,0.75);
+        backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
         opacity:0;pointer-events:none;transition:opacity .2s;
       }
       .city-sheet-overlay.open { opacity:1;pointer-events:all; }
 
       .city-sheet {
         position:fixed;bottom:0;left:0;right:0;z-index:1001;
-        background:var(--white);
-        border-top:3px solid var(--orange);
+        background:#0d1f3c;
+        border-top:2px solid var(--orange);
         transform:translateY(100%);
         transition:transform .28s cubic-bezier(.22,1,.36,1);
         padding-bottom:env(safe-area-inset-bottom);
         max-height:85vh;
         display:flex;flex-direction:column;
+        pointer-events:none;
       }
-      .city-sheet.open { transform:translateY(0); }
+      .city-sheet.open { transform:translateY(0); pointer-events:all; }
 
       .city-sheet-head {
-        background:var(--navy);padding:16px 20px;
+        background:rgba(255,255,255,0.04);padding:16px 20px;
         display:flex;align-items:center;justify-content:space-between;
-        flex-shrink:0;
+        flex-shrink:0;border-bottom:1px solid rgba(255,255,255,0.07);
       }
       .city-sheet-title {
         font-size:11px;letter-spacing:.22em;text-transform:uppercase;
-        color:rgba(255,255,255,0.7);
+        color:rgba(255,255,255,0.4);
+        font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
       }
       .city-sheet-close {
-        background:none;border:none;color:rgba(255,255,255,0.4);
+        background:none;border:none;color:rgba(255,255,255,0.3);
         font-size:24px;cursor:pointer;padding:4px 8px;line-height:1;
       }
 
@@ -1492,21 +1495,25 @@
       }
 
       .city-sheet-input {
-        width:100%;background:var(--ice);border:2px solid var(--rule-dk);
+        width:100%;background:rgba(255,255,255,0.07);
+        border:1px solid rgba(255,255,255,0.12);
         padding:16px 18px;
-        font-family:'IBM Plex Mono',monospace;font-size:17px;
-        color:var(--ink);outline:none;
-        border-radius:0;-webkit-appearance:none;
-        margin-bottom:14px;
+        font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;font-size:17px;
+        color:rgba(255,255,255,0.92);outline:none;
+        border-radius:12px;-webkit-appearance:none;
+        margin-bottom:14px;caret-color:var(--orange);
       }
-      .city-sheet-input::placeholder { color:var(--ink5); }
-      .city-sheet-input:focus { border-color:var(--navy3); }
+      .city-sheet-input::placeholder { color:rgba(255,255,255,0.2); }
+      .city-sheet-input:focus { border-color:var(--orange); }
 
       .city-sheet-geo {
-        width:100%;background:var(--ice);border:1px solid var(--rule);
+        width:100%;background:rgba(255,255,255,0.07);
+        border:1px solid rgba(255,255,255,0.1);
+        border-radius:12px;
         padding:15px 18px;
-        font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.16em;
-        text-transform:uppercase;cursor:pointer;color:var(--ink3);
+        font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
+        font-size:13px;letter-spacing:.04em;
+        cursor:pointer;color:rgba(255,255,255,0.6);
         display:flex;align-items:center;gap:10px;margin-bottom:18px;
       }
 
@@ -1514,19 +1521,25 @@
 
       .city-sheet-result {
         display:flex;align-items:center;justify-content:space-between;
-        padding:14px 16px;border:1px solid var(--rule);
-        background:var(--ice);cursor:pointer;
+        padding:14px 16px;border:1px solid rgba(255,255,255,0.07);
+        background:rgba(255,255,255,0.05);cursor:pointer;border-radius:12px;
       }
       .city-sheet-result-name {
-        font-size:17px;font-weight:400;color:var(--ink);
+        font-size:17px;font-weight:400;color:rgba(255,255,255,0.88);
+        font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
       }
       .city-sheet-result-meta {
-        font-size:9px;color:var(--ink4);letter-spacing:.1em;text-transform:uppercase;margin-top:4px;
+        font-size:10px;color:rgba(255,255,255,0.3);letter-spacing:.08em;
+        text-transform:uppercase;margin-top:4px;
+        font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
       }
       .city-sheet-add {
-        font-size:9px;letter-spacing:.14em;text-transform:uppercase;
-        color:var(--navy3);background:none;border:1px solid var(--rule-dk);
-        padding:8px 16px;cursor:pointer;font-family:'IBM Plex Mono',monospace;
+        font-size:11px;letter-spacing:.08em;text-transform:uppercase;
+        color:rgba(255,255,255,0.7);background:rgba(255,255,255,0.1);
+        border:1px solid rgba(255,255,255,0.15);
+        border-radius:8px;
+        padding:8px 16px;cursor:pointer;
+        font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
         flex-shrink:0;
       }
     }
@@ -1792,6 +1805,100 @@
       .empty-title { color: rgba(255,255,255,0.7) !important; }
       .empty-sub   { color: rgba(255,255,255,0.25) !important; }
 
+      /* ── ONBOARDING ──────────────────────────────────────────────────────── */
+      .onboarding {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        min-height: calc(100vh - 120px);
+        padding: 48px 32px 40px;
+      }
+      .onboarding-top {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .onboarding-wordmark {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 72px;
+        font-weight: 300;
+        letter-spacing: 0.04em;
+        color: rgba(255,255,255,0.95);
+        line-height: 1;
+      }
+      .onboarding-tagline {
+        font-family: -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+        font-size: 13px;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: var(--orange2);
+      }
+      .onboarding-mid {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        padding: 48px 0;
+      }
+      .onboarding-desc {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 26px;
+        font-weight: 300;
+        line-height: 1.5;
+        color: rgba(255,255,255,0.55);
+        margin: 0;
+      }
+      .onboarding-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .onboarding-btn-primary {
+        width: 100%;
+        padding: 18px 24px;
+        background: var(--orange);
+        border: none;
+        border-radius: 14px;
+        font-family: -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+        font-size: 16px;
+        font-weight: 600;
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+      }
+      .onboarding-btn-secondary {
+        width: 100%;
+        padding: 18px 24px;
+        background: rgba(255,255,255,0.08);
+        border: 1px solid rgba(255,255,255,0.12);
+        border-radius: 14px;
+        font-family: -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+        font-size: 16px;
+        font-weight: 500;
+        color: rgba(255,255,255,0.8);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+      }
+      .onboarding-btn-icon {
+        font-size: 18px;
+        line-height: 1;
+      }
+      .onboarding-footer {
+        font-family: -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+        font-size: 11px;
+        color: rgba(255,255,255,0.2);
+        text-align: center;
+        margin-top: 20px;
+        letter-spacing: 0.04em;
+      }
+
       /* ── LOG VIEW DARK ──────────────────────────────────────────────────── */
       .log-stream { background:rgba(255,255,255,0.04) !important; border-radius:12px !important; border:1px solid rgba(255,255,255,0.07) !important; margin-bottom:10px; overflow:hidden; }
       .log-stream-header { background:rgba(255,255,255,0.04) !important; border-bottom:1px solid rgba(255,255,255,0.07) !important; }
@@ -1861,17 +1968,25 @@
         background:var(--navy);
         border-top:2px solid var(--orange);
         padding-bottom:env(safe-area-inset-bottom);
+        pointer-events: all;
+        -webkit-tap-highlight-color: transparent;
       }
 
       .bottom-nav-item {
         flex:1;display:flex;flex-direction:column;align-items:center;
         justify-content:center;gap:3px;
-        padding:9px 0 8px;
+        padding:10px 0 10px;
+        min-height:54px;
         cursor:pointer;
         color:rgba(255,255,255,0.3);
         transition:color .15s;
         -webkit-tap-highlight-color:transparent;
         border:none;background:none;font-family:inherit;
+        pointer-events: all;
+        touch-action: manipulation;
+        user-select: none;
+        -webkit-user-select: none;
+        -webkit-touch-callout: none;
       }
       .bottom-nav-item.active .bottom-nav-icon { color:var(--orange2); }
       .bottom-nav-item.active .bottom-nav-label { color:#fff; }
@@ -1931,8 +2046,9 @@
       position:fixed;bottom:0;left:0;right:0;z-index:501;
       max-height:80vh;display:flex;flex-direction:column;
       padding-bottom:env(safe-area-inset-bottom);
+      pointer-events:none;
     }
-    .quick-note-sheet.open { transform:translateY(0); }
+    .quick-note-sheet.open { transform:translateY(0); pointer-events:all; }
 
     /* Header */
     .quick-note-head {
@@ -2123,6 +2239,8 @@
   <div class="footer-right">
     <div class="footer-item">Source <span>Open-Meteo API</span></div>
     <div class="footer-sep">·</div>
+    <div class="footer-item"><a href="https://doldrums.app/support" style="color:inherit;text-decoration:none;">Support</a></div>
+    <div class="footer-sep">·</div>
     <div class="footer-item">doldrums.app</div>
     <div class="footer-sep">·</div>
     <div class="footer-item">Interval <span>10 min</span></div>
@@ -2161,8 +2279,18 @@
 
 <script>
 // ── DATA ──────────────────────────────────────────────────────────────────────
-// Load saved cities from localStorage, or start empty
-let LOCATIONS = JSON.parse(localStorage.getItem('doldrums_cities') || '[]');
+// Load saved cities from localStorage, or seed a default so the app always has content
+const _DEFAULT_CITY = {
+  name: 'Boston', state: 'Massachusetts',
+  lat: 42.3601, lon: -71.0589,
+  tz: 'America/New_York',
+  unit: 'fahrenheit', windUnit: 'mph', precUnit: 'inch', sym: '°F', wu: 'mph'
+};
+let LOCATIONS = JSON.parse(localStorage.getItem('doldrums_cities') || 'null');
+if (!LOCATIONS || LOCATIONS.length === 0) {
+  LOCATIONS = [_DEFAULT_CITY];
+  // Don't save to localStorage — let first-time users choose their own city
+}
 
 function saveCities() {
   localStorage.setItem('doldrums_cities', JSON.stringify(LOCATIONS));
@@ -2458,26 +2586,31 @@ function buildGrid() {
 
   // Empty state
   if(LOCATIONS.length === 0) {
-    document.getElementById('summary-scroll').innerHTML = `
-      <div class="add-city-pill" onclick="openModal()">
-        <span class="add-city-plus">+</span>
-        <span>Add City</span>
-      </div>`;
+    document.getElementById('summary-scroll').innerHTML = '';
     document.getElementById('weather-grid').innerHTML = '';
     document.getElementById('station-count').textContent = '';
     document.getElementById('sticky-count').textContent = '';
     const main = document.querySelector('main');
     main.innerHTML = `
-      <div class="empty-state">
-        <div class="empty-icon">🌫️</div>
-        <div class="empty-title">No stations yet</div>
-        <div class="empty-sub">Add a city to start tracking conditions.</div>
-        <button class="empty-btn" onclick="addMyLocation()" style="margin-bottom:12px;">
-          <span class="empty-btn-plus">◎</span> Use my location
-        </button>
-        <button class="empty-btn" onclick="openModal()" style="background:transparent;border:1px solid var(--rule-dk);color:var(--ink3);">
-          <span class="empty-btn-plus" style="color:var(--orange2)">+</span> Add a city
-        </button>
+      <div class="onboarding">
+        <div class="onboarding-top">
+          <div class="onboarding-wordmark">doldrums</div>
+          <div class="onboarding-tagline">Know your skies.</div>
+        </div>
+        <div class="onboarding-mid">
+          <p class="onboarding-desc">Live conditions, hourly forecasts, and a personal weather journal — for the places that matter to you.</p>
+        </div>
+        <div class="onboarding-actions">
+          <button class="onboarding-btn-primary" onclick="addMyLocation()">
+            <span class="onboarding-btn-icon">◎</span>
+            Use my location
+          </button>
+          <button class="onboarding-btn-secondary" onclick="openCitySheet()">
+            <span class="onboarding-btn-icon">+</span>
+            Add a city
+          </button>
+        </div>
+        <div class="onboarding-footer">Free. No account required.</div>
       </div>`;
     return;
   }
@@ -3044,7 +3177,7 @@ function goBack() {
 
 // Top-level nav — resets history so back button never shows
 function navTo(view) {
-  _navHistory = [view];
+  _navHistory.splice(0, _navHistory.length, view);
   setView(view);
 }
 
@@ -3832,7 +3965,7 @@ let _radarInitDone = false;
 async function renderRadarView() {
   const main = document.querySelector('main');
 
-  main.innerHTML = `<div class="radar-view">
+  main.innerHTML = `<div class="radar-view" style="touch-action:none;">
     <div id="radar-map"></div>
     <div class="radar-controls">
       <button class="radar-play-btn" id="radar-play-btn" onclick="radarTogglePlay()" title="Play/Pause">▶</button>
@@ -4713,15 +4846,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
 <!-- BOTTOM NAV (mobile only) -->
 <nav class="bottom-nav" id="bottom-nav">
-  <button class="bottom-nav-item active" onclick="navTo('conditions')" data-view="conditions">
+  <button class="bottom-nav-item active" data-view="conditions" onclick="navTo('conditions')">
     <span class="bottom-nav-icon">◎</span>
     <span class="bottom-nav-label">Now</span>
   </button>
-  <button class="bottom-nav-item" onclick="navTo('radar')" data-view="radar">
+  <button class="bottom-nav-item" data-view="radar" onclick="navTo('radar')">
     <span class="bottom-nav-icon" style="font-size:20px">◈</span>
     <span class="bottom-nav-label">Radar</span>
   </button>
-  <button class="bottom-nav-item" onclick="navTo('log')" data-view="log">
+  <button class="bottom-nav-item" data-view="log" onclick="navTo('log')">
     <span class="bottom-nav-icon" style="font-size:22px;letter-spacing:-1px">≡</span>
     <span class="bottom-nav-label">Log</span>
   </button>
@@ -4790,11 +4923,70 @@ document.addEventListener('DOMContentLoaded', () => {
 </div>
 
 <script>
-// PTR disabled — hiding indicator
-document.addEventListener('DOMContentLoaded', () => {
-  const ind = document.getElementById('ptr-indicator');
-  if(ind) ind.style.display = 'none';
-});
+// ── BOTTOM NAV TOUCH LISTENERS ───────────────────────────────────────────────
+(function() {
+  function attachNav() {
+    const nav = document.getElementById('bottom-nav');
+    if(!nav) { setTimeout(attachNav, 100); return; }
+
+    nav.addEventListener('pointerup', function(e) {
+      const btn = e.target.closest('[data-view]');
+      if(!btn) return;
+      navTo(btn.dataset.view);
+    });
+
+    nav.addEventListener('touchend', function(e) {
+      const btn = e.target.closest('[data-view]');
+      if(!btn) return;
+      e.preventDefault();
+      navTo(btn.dataset.view);
+    }, { passive: false });
+
+    nav.addEventListener('click', function(e) {
+      const btn = e.target.closest('[data-view]');
+      if(!btn) return;
+      navTo(btn.dataset.view);
+    });
+  }
+  attachNav();
+
+  // ── COORDINATE-BASED NAV FALLBACK ─────────────────────────────────────────
+  // Bypasses DOM event system entirely — uses raw touch position
+  window.addEventListener('touchend', function(e) {
+    // Ignore multi-touch (pinch/zoom)
+    if(e.touches.length > 0) return;
+
+    const touch = e.changedTouches[0];
+    const y = touch.clientY;
+    const x = touch.clientX;
+    const h = window.innerHeight;
+    const w = window.innerWidth;
+    const navH = 65;
+
+    if(y < h - navH) return;
+
+    if(x < w / 3) {
+      navTo('conditions');
+    } else if(x < (2 * w) / 3) {
+      navTo('radar');
+    } else {
+      navTo('log');
+    }
+    e.preventDefault();
+  }, { passive: false });
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const ind = document.getElementById('ptr-indicator');
+    if(ind) ind.style.display = 'none';
+  });
+})();
 </script>
+
+<!-- NAV TOUCH CATCHER - highest z-index, transparent, catches all nav touches -->
+<div id="nav-touch-catcher" style="position:fixed;bottom:0;left:0;right:0;height:80px;z-index:99999;background:transparent;display:flex;">
+  <div style="flex:1;height:100%;" ontouchend="event.preventDefault();navTo('conditions')" onclick="navTo('conditions')"></div>
+  <div style="flex:1;height:100%;" ontouchend="event.preventDefault();navTo('radar')" onclick="navTo('radar')"></div>
+  <div style="flex:1;height:100%;" ontouchend="event.preventDefault();navTo('log')" onclick="navTo('log')"></div>
+</div>
 </body>
 </html>
